@@ -249,7 +249,7 @@ export function CounterpartyModal({
             );
           })()}
 
-          <div className="grid grid-cols-1 gap-6 bg-[#F6F6F4] px-6 py-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="grid grid-cols-1 gap-6 bg-white px-6 py-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6 min-w-0">
             {/* Section: Requires decision */}
             <section>
@@ -358,7 +358,7 @@ export function CounterpartyModal({
                     </div>
                   ))}
                   {verification.map((r) => (
-                    <div key={r.id} className="rounded-xl border border-border bg-slate-50 p-4">
+                    <div key={r.id} className="rounded-xl border border-border bg-white p-4">
                       <DecisionHeader
                         icon={<Clock className="h-4 w-4" />}
                         iconCls="bg-slate-200 text-slate-700"
@@ -381,7 +381,7 @@ export function CounterpartyModal({
                     </div>
                   ))}
                   {dismissed.map((r) => (
-                    <div key={r.id} className="rounded-xl border border-border bg-muted/40 p-4">
+                    <div key={r.id} className="rounded-xl border border-border bg-slate-50/60 p-4">
                       <DecisionHeader
                         icon={<XCircle className="h-4 w-4" />}
                         iconCls="bg-muted text-muted-foreground"

@@ -15,6 +15,15 @@ import {
   Gauge,
   GraduationCap,
   Headphones,
+  TrendingDown,
+  Scale,
+  UsersRound,
+  ShieldAlert,
+  Ban,
+  AlertTriangle,
+  FileX,
+  LayoutGrid,
+  type LucideIcon,
 } from "lucide-react";
 import { counterparties, type Counterparty, type RiskType } from "@/lib/mock-data";
 import { CounterpartyModal } from "@/components/counterparty/CounterpartyModal";
@@ -190,66 +199,111 @@ function SidebarItem({
 
 type RiskChipKey = "all" | RiskType;
 
-const riskChipConfig: { key: RiskChipKey; label: string; short: string; active: string; idle: string }[] = [
-  {
-    key: "all",
-    label: "Все признаки",
-    short: "Все",
-    active: "bg-slate-200 border-slate-400 text-slate-900",
-    idle: "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100",
-  },
-  {
-    key: "Ухудшилось финансовое состояние",
-    label: "Финсостояние",
-    short: "Финсостояние",
-    active: "bg-amber-100 border-amber-400 text-amber-900",
-    idle: "bg-amber-50/60 border-amber-200/70 text-amber-800/70 hover:bg-amber-50",
-  },
-  {
-    key: "Уголовное дело",
-    label: "Уголовное дело",
-    short: "Уголовное",
-    active: "bg-red-100 border-red-400 text-red-900",
-    idle: "bg-red-50/60 border-red-200/70 text-red-800/70 hover:bg-red-50",
-  },
-  {
-    key: "Административные нарушения",
-    label: "Адм. нарушения",
-    short: "Адм.",
-    active: "bg-orange-100 border-orange-400 text-orange-900",
-    idle: "bg-orange-50/60 border-orange-200/70 text-orange-800/70 hover:bg-orange-50",
-  },
-  {
-    key: "Неисполнение контракта группы",
-    label: "Неисполнение",
-    short: "Неисполнение",
-    active: "bg-yellow-100 border-yellow-500 text-yellow-900",
-    idle: "bg-yellow-50/60 border-yellow-200/70 text-yellow-800/70 hover:bg-yellow-50",
-  },
-  {
-    key: "Ограничения деятельности",
-    label: "Ограничения",
-    short: "Ограничения",
-    active: "bg-slate-300 border-slate-500 text-slate-900",
-    idle: "bg-slate-100/70 border-slate-200 text-slate-600 hover:bg-slate-200/60",
-  },
-  {
-    key: "Банкротство / ликвидация",
-    label: "Банкротство",
-    short: "Банкротство",
-    active: "bg-rose-100 border-rose-400 text-rose-900",
-    idle: "bg-rose-50/60 border-rose-200/70 text-rose-800/70 hover:bg-rose-50",
-  },
-];
-
-const riskChipShort: Record<RiskType, { short: string; cls: string }> = {
-  "Ухудшилось финансовое состояние": { short: "Финсостояние", cls: "bg-amber-100 text-amber-900" },
-  "Уголовное дело": { short: "Уголовное", cls: "bg-red-100 text-red-900" },
-  "Административные нарушения": { short: "Адм.", cls: "bg-orange-100 text-orange-900" },
-  "Неисполнение контракта группы": { short: "Неисполнение", cls: "bg-yellow-100 text-yellow-900" },
-  "Ограничения деятельности": { short: "Ограничения", cls: "bg-slate-200 text-slate-800" },
-  "Банкротство / ликвидация": { short: "Банкротство", cls: "bg-rose-100 text-rose-900" },
+type RiskMetaItem = {
+  icon: LucideIcon;
+  short: string;
+  label: string;
+  iconColor: string;
+  activeBg: string;
+  activeText: string;
+  activeBorder: string;
+  idleIconColor: string;
 };
+
+const riskMeta: Record<RiskType, RiskMetaItem> = {
+  "Ухудшилось финансовое состояние": {
+    icon: TrendingDown,
+    short: "Ухудшилось фин. состояние",
+    label: "Ухудшилось фин. состояние",
+    iconColor: "text-rose-600",
+    activeBg: "bg-rose-50",
+    activeText: "text-rose-900",
+    activeBorder: "border-rose-300",
+    idleIconColor: "text-rose-500/70",
+  },
+  "Банкротство / ликвидация": {
+    icon: Scale,
+    short: "Банкротство / ликвидация",
+    label: "Банкротство / ликвидация",
+    iconColor: "text-rose-700",
+    activeBg: "bg-rose-50",
+    activeText: "text-rose-900",
+    activeBorder: "border-rose-300",
+    idleIconColor: "text-rose-600/70",
+  },
+  "Неисполнение контракта группы": {
+    icon: FileX,
+    short: "Неисполнение контракта",
+    label: "Неисполнение контракта группы",
+    iconColor: "text-amber-700",
+    activeBg: "bg-amber-50",
+    activeText: "text-amber-900",
+    activeBorder: "border-amber-300",
+    idleIconColor: "text-amber-600/70",
+  },
+  "Уголовное дело": {
+    icon: ShieldAlert,
+    short: "Уголовное дело",
+    label: "Уголовное дело",
+    iconColor: "text-red-700",
+    activeBg: "bg-red-50",
+    activeText: "text-red-900",
+    activeBorder: "border-red-300",
+    idleIconColor: "text-red-600/70",
+  },
+  "Ограничения деятельности": {
+    icon: Ban,
+    short: "Ограничения",
+    label: "Ограничения деятельности",
+    iconColor: "text-slate-700",
+    activeBg: "bg-slate-100",
+    activeText: "text-slate-900",
+    activeBorder: "border-slate-400",
+    idleIconColor: "text-slate-500",
+  },
+  "Административные нарушения": {
+    icon: AlertTriangle,
+    short: "Адм. нарушения",
+    label: "Адм. нарушения",
+    iconColor: "text-orange-700",
+    activeBg: "bg-orange-50",
+    activeText: "text-orange-900",
+    activeBorder: "border-orange-300",
+    idleIconColor: "text-orange-600/70",
+  },
+};
+
+// Optional virtual chip "Просрочена задолженность в группе" — uses group icon
+const groupOverdueChip = {
+  icon: UsersRound,
+  label: "Просрочена задолженность в группе",
+  short: "Группа",
+  iconColor: "text-amber-700",
+  activeBg: "bg-amber-50",
+  activeText: "text-amber-900",
+  activeBorder: "border-amber-300",
+  idleIconColor: "text-amber-600/70",
+};
+
+const allChipMeta = {
+  icon: LayoutGrid,
+  label: "Все признаки",
+  short: "Все",
+  iconColor: "text-slate-700",
+  activeBg: "bg-slate-100",
+  activeText: "text-slate-900",
+  activeBorder: "border-slate-400",
+  idleIconColor: "text-slate-500",
+};
+
+const riskOrder: RiskType[] = [
+  "Ухудшилось финансовое состояние",
+  "Банкротство / ликвидация",
+  "Неисполнение контракта группы",
+  "Уголовное дело",
+  "Ограничения деятельности",
+  "Административные нарушения",
+];
 
 export default function Index() {
   const [active, setActive] = useState<Counterparty | null>(null);
@@ -421,25 +475,34 @@ export default function Index() {
 
             {showRiskChips && (
               <div className="mb-5 flex flex-wrap gap-2">
-                {riskChipConfig.map((chip) => {
-                  const count = riskCounts[chip.key] ?? 0;
-                  const isActive = riskFilter === chip.key;
-                  const disabled = chip.key !== "all" && count === 0;
+                {(["all", ...riskOrder] as RiskChipKey[]).map((key) => {
+                  const meta = key === "all" ? allChipMeta : riskMeta[key as RiskType];
+                  const Icon = meta.icon;
+                  const count = riskCounts[key] ?? 0;
+                  const isActive = riskFilter === key;
+                  const disabled = key !== "all" && count === 0;
                   return (
                     <button
-                      key={chip.key}
+                      key={key}
                       disabled={disabled}
                       onClick={() =>
-                        setRiskFilter(isActive && chip.key !== "all" ? "all" : chip.key)
+                        setRiskFilter(isActive && key !== "all" ? "all" : key)
                       }
                       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                        isActive ? `${chip.active} shadow-sm` : chip.idle
+                        isActive
+                          ? `${meta.activeBg} ${meta.activeBorder} ${meta.activeText} shadow-sm`
+                          : `bg-white border-slate-200 text-slate-600 hover:bg-slate-50`
                       } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
                     >
-                      {chip.label}
+                      <Icon
+                        className={`h-3.5 w-3.5 ${
+                          isActive ? meta.iconColor : meta.idleIconColor
+                        }`}
+                      />
+                      {meta.label}
                       <span
                         className={`rounded-full px-1.5 py-px text-[10px] ${
-                          isActive ? "bg-white/60" : "bg-white/70 text-muted-foreground"
+                          isActive ? "bg-white/70" : "bg-slate-100 text-muted-foreground"
                         }`}
                       >
                         {count}
@@ -469,90 +532,70 @@ export default function Index() {
                 </div>
               )}
               {filtered.map((c, idx) => {
-                const openSignals = c.risks.filter(
-                  (r) => r.status === "pending" || r.status === "verification",
-                ).length;
                 const stage = c.collection.find((s) => s.status === "current")?.stage ?? "—";
-                const tagCls =
-                  c.status === "overdue_risk"
-                    ? "bg-amber-100 text-amber-900"
-                    : c.status === "risk"
-                      ? "bg-amber-50 text-amber-800"
-                      : c.status === "overdue"
-                        ? "bg-orange-50 text-orange-800"
-                        : "bg-emerald-50 text-emerald-800";
+                const types = Array.from(new Set(c.risks.map((r) => r.type)));
+                const shownIcons = types.slice(0, 3);
+                const restIcons = types.length - shownIcons.length;
                 return (
                   <button
                     key={c.id}
                     onClick={() => setActive(c)}
-                    className={`grid w-full grid-cols-12 items-center gap-3 px-4 py-3 text-left transition hover:bg-muted/40 ${
+                    className={`flex w-full items-center gap-4 px-5 py-4 text-left transition hover:bg-slate-50 ${
                       idx > 0 ? "border-t border-border" : ""
                     }`}
                   >
-                    <div className="col-span-12 sm:col-span-4">
-                      <div className="text-sm font-medium">{c.name}</div>
-                      <div className="mt-0.5 text-[11px] text-muted-foreground">
-                        ИНН {c.inn} · {c.contracts.length} дог.
+                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {shownIcons.length === 0 ? (
+                          <span className="text-[10px] text-muted-foreground">Нет признаков</span>
+                        ) : (
+                          shownIcons.map((t) => {
+                            const m = riskMeta[t];
+                            const Icon = m.icon;
+                            return (
+                              <span
+                                key={t}
+                                title={m.label}
+                                className={`inline-flex h-6 w-6 items-center justify-center rounded-full border ${m.activeBorder} ${m.activeBg}`}
+                              >
+                                <Icon className={`h-3.5 w-3.5 ${m.iconColor}`} />
+                              </span>
+                            );
+                          })
+                        )}
+                        {restIcons > 0 && (
+                          <span className="inline-flex h-6 items-center rounded-full border border-slate-200 bg-slate-50 px-1.5 text-[10px] font-medium text-slate-600">
+                            +{restIcons}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-sm font-semibold text-foreground">{c.name}</div>
+                      <div className="text-[12px] text-muted-foreground">
+                        {c.inn} · {c.contracts.length} дог. · {stage} · изм. {c.lastUpdate}
                       </div>
                     </div>
-                    <div className="col-span-6 sm:col-span-2">
+                    <div className="hidden shrink-0 text-right sm:block">
                       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
                         Задолженность
                       </div>
-                      <div className="text-sm font-medium">{c.totalDebt}</div>
+                      <div className="text-sm font-semibold">{c.totalDebt}</div>
                     </div>
-                    <div className="col-span-6 sm:col-span-2">
+                    <div className="hidden shrink-0 text-right sm:block">
                       <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
-                        Просрочено
+                        Просроченная
                       </div>
                       <div
-                        className={`text-sm font-medium ${
-                          c.overdueAmountNum > 0 ? "text-amber-700" : ""
+                        className={`text-sm font-semibold ${
+                          c.overdueAmountNum > 0 ? "text-rose-600" : "text-muted-foreground"
                         }`}
                       >
-                        {c.overdueDebt}
+                        {c.overdueAmountNum > 0 ? c.overdueDebt : "—"}
                       </div>
                     </div>
-                    <div className="col-span-12 flex flex-wrap items-center gap-1.5 sm:col-span-3">
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${tagCls}`}>
-                        {c.tag}
+                    <div className="shrink-0">
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted-foreground">
+                        <ChevronRight className="h-4 w-4" />
                       </span>
-                      {(() => {
-                        const types = Array.from(new Set(c.risks.map((r) => r.type)));
-                        const shown = types.slice(0, 2);
-                        const rest = types.length - shown.length;
-                        return (
-                          <>
-                            {shown.map((t) => {
-                              const cfg = riskChipShort[t];
-                              return (
-                                <span
-                                  key={t}
-                                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${cfg.cls}`}
-                                >
-                                  {cfg.short}
-                                </span>
-                              );
-                            })}
-                            {rest > 0 && (
-                              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                                + ещё {rest}
-                              </span>
-                            )}
-                            {openSignals > 0 && (
-                              <span className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-900">
-                                {openSignals} сигн.
-                              </span>
-                            )}
-                          </>
-                        );
-                      })()}
-                      <div className="mt-0.5 w-full text-[11px] text-muted-foreground">
-                        Этап: {stage} · обн. {c.lastUpdate}
-                      </div>
-                    </div>
-                    <div className="col-span-12 hidden justify-end sm:col-span-1 sm:flex">
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
                     </div>
                   </button>
                 );
