@@ -1,11 +1,34 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, ShieldCheck, Search, ChevronRight, Pencil, CheckCircle2, XCircle } from "lucide-react";
-import type { Counterparty, Contract, RiskSignal, CollectionSubStep } from "@/lib/mock-data";
-import { RiskDrawer } from "./RiskDrawer";
+import {
+  AlertTriangle,
+  ShieldCheck,
+  Search,
+  ChevronRight,
+  Pencil,
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Calendar,
+  X,
+} from "lucide-react";
+import type {
+  Counterparty,
+  Contract,
+  RiskSignal,
+  CollectionSubStep,
+  OverdueRecord,
+} from "@/lib/mock-data";
+import { RiskDrawer, type DecisionKind, type RiskSavePayload } from "./RiskDrawer";
 import { ContractDrawer } from "./ContractDrawer";
 import { DebtStepper } from "./DebtStepper";
+
+const priorityBadge: Record<string, { label: string; cls: string }> = {
+  high: { label: "Высокий приоритет", cls: "bg-amber-100 text-amber-900" },
+  medium: { label: "Средний приоритет", cls: "bg-amber-50 text-amber-800" },
+  low: { label: "Низкий приоритет", cls: "bg-muted text-muted-foreground" },
+};
 
 export function CounterpartyModal({
   counterparty,
@@ -20,67 +43,109 @@ export function CounterpartyModal({
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [steps, setSteps] = useState<CollectionSubStep[]>([]);
   const [editing, setEditing] = useState<RiskSignal | null>(null);
+  const [initialDecision, setInitialDecision] = useState<DecisionKind>("confirm");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [contractDrawer, setContractDrawer] = useState<Contract | null>(null);
+  const [stepperError, setStepperError] = useState<string | null>(null);
 
   useEffect(() => {
     if (counterparty && open) {
       setRisks(counterparty.risks.map((r) => ({ ...r })));
-      setContracts(counterparty.contracts.map((c) => ({ ...c })));
+      setContracts(counterparty.contracts.map((c) => ({ ...c, overdueHistory: [...c.overdueHistory] })));
       setSteps(counterparty.collection.map((s) => ({ ...s })));
+      setStepperError(null);
     }
   }, [counterparty, open]);
 
+  const pending = useMemo(() => risks.filter((r) => r.status === "pending"), [risks]);
+  const verification = useMemo(() => risks.filter((r) => r.status === "verification"), [risks]);
+  const confirmed = useMemo(() => risks.filter((r) => r.status === "confirmed"), [risks]);
+  const dismissed = useMemo(() => risks.filter((r) => r.status === "dismissed"), [risks]);
+  const decidedCount = confirmed.length + dismissed.length + verification.length;
+  const totalOverdue = contracts.reduce((acc, c) => acc + c.overdue, 0);
+  const currentStage = steps.find((s) => s.status === "current");
+  const allMeasures = confirmed.flatMap((r) => r.decision?.measures ?? []);
+
   if (!counterparty) return null;
 
-  const pending = risks.filter((r) => r.status === "pending");
-  const decided = risks.filter((r) => r.status === "confirmed");
-  const dismissed = risks.filter((r) => r.status === "dismissed");
-
-  const allMeasures = decided.flatMap((r) => r.decision?.measures ?? []);
-
-  const openConfirm = (r: RiskSignal) => {
+  const openDrawer = (r: RiskSignal, decision: DecisionKind) => {
     setEditing(r);
+    setInitialDecision(decision);
     setDrawerOpen(true);
   };
 
-  const handleSave = (riskId: string, payload: { date: string; measures: string[]; comment: string }) => {
+  const handleSave = (riskId: string, payload: RiskSavePayload) => {
     setRisks((prev) =>
-      prev.map((r) => (r.id === riskId ? { ...r, status: "confirmed", decision: payload } : r)),
-    );
-  };
-
-  const handleDismiss = (r: RiskSignal) => {
-    setRisks((prev) =>
-      prev.map((x) =>
-        x.id === r.id
-          ? {
-              ...x,
-              status: "dismissed",
-              dismissal: { date: new Date().toLocaleDateString("ru-RU"), comment: "Снято по результатам проверки" },
-            }
-          : x,
-      ),
+      prev.map((r) => {
+        if (r.id !== riskId) return r;
+        if (payload.kind === "confirm")
+          return {
+            ...r,
+            status: "confirmed",
+            decision: {
+              date: payload.date,
+              measures: payload.measures,
+              comment: payload.comment,
+              responsible: payload.responsible,
+            },
+            verification: undefined,
+            dismissal: undefined,
+          };
+        if (payload.kind === "dismiss")
+          return {
+            ...r,
+            status: "dismissed",
+            dismissal: { date: payload.date, comment: payload.comment, responsible: payload.responsible },
+            decision: undefined,
+            verification: undefined,
+          };
+        return {
+          ...r,
+          status: "verification",
+          verification: {
+            date: payload.date,
+            plannedDate: payload.plannedDate,
+            comment: payload.comment,
+            responsible: payload.responsible,
+          },
+          decision: undefined,
+          dismissal: undefined,
+        };
+      }),
     );
   };
 
   const advanceStage = () => {
+    setStepperError(null);
+    const idx = steps.findIndex((s) => s.status === "current");
+    if (idx === -1) return;
+    const cur = steps[idx];
+    const next = steps[idx + 1];
+    if (!next) return;
+    if (
+      next.title === "Ведется исполнительное производство" &&
+      cur.title !== "Получен судебный акт"
+    ) {
+      setStepperError("Нельзя перейти к исполнительному производству без этапа «Получен судебный акт».");
+      return;
+    }
+    if (next.title === "Задолженность погашена" && totalOverdue > 0) {
+      setStepperError("Нельзя закрыть кейс: остаётся просроченная задолженность.");
+      return;
+    }
     setSteps((prev) => {
-      const idx = prev.findIndex((s) => s.status === "current");
-      if (idx === -1) return prev;
-      const next = [...prev];
-      next[idx] = { ...next[idx], status: "done", overdue: false };
-      if (next[idx + 1]) {
-        next[idx + 1] = {
-          ...next[idx + 1],
-          status: "current",
-          startDate: new Date().toLocaleDateString("ru-RU"),
-          sla: "7 дней",
-          plannedDate: new Date(Date.now() + 7 * 86400000).toLocaleDateString("ru-RU"),
-          overdue: false,
-        };
-      }
-      return next;
+      const arr = [...prev];
+      arr[idx] = { ...arr[idx], status: "done", overdue: false };
+      arr[idx + 1] = {
+        ...arr[idx + 1],
+        status: "current",
+        startDate: new Date().toLocaleDateString("ru-RU"),
+        sla: "7 дней",
+        plannedDate: new Date(Date.now() + 7 * 86400000).toLocaleDateString("ru-RU"),
+        overdue: false,
+        nextAction: arr[idx + 1].nextAction ?? "Запланировать следующее действие",
+      };
+      return arr;
     });
   };
 
@@ -100,196 +165,234 @@ export function CounterpartyModal({
     );
   };
 
-  const addOverdue = (id: string, amount: number, days: number) => {
+  const addOverdue = (id: string, record: OverdueRecord) => {
     setContracts((prev) =>
       prev.map((c) =>
-        c.id === id ? { ...c, overdue: c.overdue + amount, overdueDays: Math.max(c.overdueDays, days) } : c,
+        c.id === id
+          ? {
+              ...c,
+              overdue: c.overdue + record.amount,
+              overdueDays: Math.max(c.overdueDays, record.days),
+              overdueHistory: [record, ...c.overdueHistory],
+            }
+          : c,
       ),
+    );
+    setContractDrawer((prev) =>
+      prev && prev.id === id
+        ? {
+            ...prev,
+            overdue: prev.overdue + record.amount,
+            overdueDays: Math.max(prev.overdueDays, record.days),
+            overdueHistory: [record, ...prev.overdueHistory],
+          }
+        : prev,
     );
   };
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[92vh] w-[96vw] max-w-5xl gap-0 overflow-y-auto p-0">
-          {/* Header */}
-          <div className="bg-gradient-to-b from-destructive/5 to-transparent px-8 pt-8 pb-6">
-            <div className="inline-flex items-center rounded-full bg-destructive/10 px-2.5 py-1 text-xs text-destructive">
-              {counterparty.tag}
+        <DialogContent className="max-h-[92vh] w-[96vw] max-w-5xl gap-0 overflow-y-auto p-0 [&>button]:hidden">
+          {/* Compact header */}
+          <div className="border-b border-border bg-white px-6 pt-5 pb-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-900">
+                    {counterparty.tag}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground">ИНН {counterparty.inn}</span>
+                </div>
+                <h2 className="mt-1.5 text-xl font-semibold tracking-tight">{counterparty.name}</h2>
+              </div>
+              <button
+                onClick={() => onOpenChange(false)}
+                className="rounded-md p-1 text-muted-foreground hover:bg-muted"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-            <h2 className="mt-3 text-3xl font-semibold tracking-tight">{counterparty.name}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{counterparty.inn}</p>
 
-            <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-border bg-card p-4">
-                <div className="text-sm text-muted-foreground">Общая задолженность</div>
-                <div className="mt-1 text-2xl font-semibold">{counterparty.totalDebt}</div>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4">
-                <div className="text-sm text-muted-foreground">Просроченная задолженность</div>
-                <div className="mt-1 text-2xl font-semibold text-destructive">{counterparty.overdueDebt}</div>
-              </div>
+            <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-5">
+              <Stat label="Задолженность" value={counterparty.totalDebt} />
+              <Stat
+                label="Просрочено"
+                value={`${totalOverdue.toFixed(1)} млн. ₽`}
+                accent={totalOverdue > 0}
+              />
+              <Stat label="Открытые сигналы" value={String(pending.length + verification.length)} />
+              <Stat label="Этап взыскания" value={currentStage?.stage ?? "—"} />
+              <Stat label="Обновлено" value={counterparty.lastUpdate} />
             </div>
           </div>
 
-          <div className="space-y-6 px-8 pb-8">
-            {/* Section 1: Requires decision */}
+          <div className="space-y-6 bg-[#F6F6F4] px-6 py-6">
+            {/* Section: Requires decision */}
             <section>
-              <div className="mb-3 flex items-center gap-2">
-                <h3 className="text-lg font-semibold">Требуют решения</h3>
-                <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs font-medium text-destructive">
-                  {pending.length}
-                </span>
-              </div>
+              <SectionTitle title="Требуют решения" count={pending.length} tone="warn" />
               {pending.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-                  Активных сигналов нет — все риски обработаны
-                </div>
+                <EmptyState text="Все сигналы обработаны" />
               ) : (
-                <div className="space-y-3">
-                  {pending.map((r) => (
-                    <div key={r.id} className="rounded-xl border border-border bg-card p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div className="flex items-start gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-                            <AlertTriangle className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <div className="font-semibold">{r.type}</div>
-                            <div className="mt-0.5 text-sm text-muted-foreground">{r.description}</div>
-                            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                              <span>Источник: <b className="text-foreground">{r.source}</b></span>
-                              <span>Обнаружено: <b className="text-foreground">{r.detectedAt}</b></span>
+                <div className="space-y-2.5">
+                  {pending.map((r) => {
+                    const p = priorityBadge[r.priority];
+                    return (
+                      <div key={r.id} className="rounded-xl border border-border bg-white p-4">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-start gap-3">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-700">
+                              <AlertTriangle className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-medium">{r.type}</span>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${p.cls}`}>
+                                  {p.label}
+                                </span>
+                                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">
+                                  Требует проверки
+                                </span>
+                              </div>
+                              <div className="mt-1 text-sm text-muted-foreground">{r.description}</div>
+                              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                                <span>Источник: <b className="text-foreground">{r.source}</b></span>
+                                <span>Обнаружено: <b className="text-foreground">{r.detectedAt}</b></span>
+                              </div>
+                              <div className="mt-1.5 text-[11px]">
+                                <span className="text-muted-foreground">Рекомендуется: </span>
+                                <span className="font-medium">{r.recommendedAction}</span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                        <span className="rounded-full bg-muted px-2.5 py-1 text-xs">Требует проверки</span>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Button size="sm" onClick={() => openDrawer(r, "confirm")}>
+                            <CheckCircle2 className="mr-1.5 h-4 w-4" /> Подтвердить
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => openDrawer(r, "dismiss")}>
+                            <XCircle className="mr-1.5 h-4 w-4" /> Снять
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => openDrawer(r, "verify")}>
+                            <Search className="mr-1.5 h-4 w-4" /> На проверку
+                          </Button>
+                        </div>
                       </div>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <Button size="sm" onClick={() => openConfirm(r)}>
-                          <CheckCircle2 className="mr-1.5 h-4 w-4" /> Подтвердить риск
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleDismiss(r)}>
-                          <XCircle className="mr-1.5 h-4 w-4" /> Снять риск
-                        </Button>
-                        <Button size="sm" variant="ghost">
-                          <Search className="mr-1.5 h-4 w-4" /> Доп. проверка
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </section>
 
-            {/* Section 2: Decisions */}
-            {(decided.length > 0 || dismissed.length > 0) && (
+            {/* Section: Decisions */}
+            {decidedCount > 0 && (
               <section>
-                <div className="mb-3 flex items-center gap-2">
-                  <h3 className="text-lg font-semibold">Принятые решения</h3>
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                    {decided.length + dismissed.length}
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  {decided.map((r) => (
-                    <div key={r.id} className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
-                            <ShieldCheck className="h-5 w-5" />
-                          </div>
-                          <div>
-                            <div className="font-semibold">{r.type}</div>
-                            <div className="mt-0.5 text-xs text-muted-foreground">
-                              Подтверждено · {r.decision?.date}
-                            </div>
-                            <div className="mt-2 flex flex-wrap gap-1.5">
-                              {r.decision?.measures.map((m) => (
-                                <span
-                                  key={m}
-                                  className="rounded-full bg-background px-2.5 py-1 text-xs font-medium text-foreground border border-border"
-                                >
-                                  {m}
-                                </span>
-                              ))}
-                            </div>
-                            {r.decision?.comment && (
-                              <div className="mt-2 text-sm text-muted-foreground italic">
-                                «{r.decision.comment}»
-                              </div>
-                            )}
-                          </div>
+                <SectionTitle title="Принятые решения" count={decidedCount} />
+                <div className="space-y-2.5">
+                  {confirmed.map((r) => (
+                    <div key={r.id} className="rounded-xl border border-border bg-white p-4">
+                      <DecisionHeader
+                        icon={<ShieldCheck className="h-4 w-4" />}
+                        iconCls="bg-primary/10 text-primary"
+                        title={r.type}
+                        statusLabel="Подтверждено"
+                        statusCls="bg-primary/10 text-primary"
+                        date={r.decision?.date}
+                        responsible={r.decision?.responsible}
+                        onEdit={() => openDrawer(r, "confirm")}
+                      />
+                      {r.decision?.measures && r.decision.measures.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {r.decision.measures.map((m) => (
+                            <span
+                              key={m}
+                              className="rounded-full border border-border bg-white px-2.5 py-0.5 text-[11px]"
+                            >
+                              {m}
+                            </span>
+                          ))}
                         </div>
-                        <Button size="sm" variant="ghost" onClick={() => openConfirm(r)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                      )}
+                      {r.decision?.comment && (
+                        <div className="mt-2 text-xs text-muted-foreground">«{r.decision.comment}»</div>
+                      )}
+                    </div>
+                  ))}
+                  {verification.map((r) => (
+                    <div key={r.id} className="rounded-xl border border-border bg-slate-50 p-4">
+                      <DecisionHeader
+                        icon={<Clock className="h-4 w-4" />}
+                        iconCls="bg-slate-200 text-slate-700"
+                        title={r.type}
+                        statusLabel="На дополнительной проверке"
+                        statusCls="bg-slate-200 text-slate-800"
+                        date={r.verification?.date}
+                        responsible={r.verification?.responsible}
+                        onEdit={() => openDrawer(r, "verify")}
+                      />
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                        <span className="inline-flex items-center gap-1">
+                          <Calendar className="h-3 w-3" /> Плановая проверка:{" "}
+                          <b className="text-foreground">{r.verification?.plannedDate}</b>
+                        </span>
                       </div>
+                      {r.verification?.comment && (
+                        <div className="mt-2 text-xs text-muted-foreground">«{r.verification.comment}»</div>
+                      )}
                     </div>
                   ))}
                   {dismissed.map((r) => (
                     <div key={r.id} className="rounded-xl border border-border bg-muted/40 p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                          <XCircle className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="font-semibold text-muted-foreground">{r.type}</div>
-                          <div className="mt-0.5 text-xs text-muted-foreground">
-                            Риск снят · {r.dismissal?.date}
-                          </div>
-                          <div className="mt-1 text-sm italic text-muted-foreground">
-                            {r.dismissal?.comment}
-                          </div>
-                        </div>
-                      </div>
+                      <DecisionHeader
+                        icon={<XCircle className="h-4 w-4" />}
+                        iconCls="bg-muted text-muted-foreground"
+                        title={r.type}
+                        statusLabel="Риск снят"
+                        statusCls="bg-muted text-muted-foreground"
+                        date={r.dismissal?.date}
+                        responsible={r.dismissal?.responsible}
+                        onEdit={() => openDrawer(r, "dismiss")}
+                        muted
+                      />
+                      {r.dismissal?.comment && (
+                        <div className="mt-2 text-xs text-muted-foreground">«{r.dismissal.comment}»</div>
+                      )}
                     </div>
                   ))}
                 </div>
               </section>
             )}
 
-            {/* Section 3: Debt collection */}
-            <DebtStepper steps={steps} onAdvance={advanceStage} />
+            {/* Section: Debt collection */}
+            <DebtStepper steps={steps} onAdvance={advanceStage} error={stepperError} />
 
-            {/* Section 4: Contracts */}
+            {/* Section: Contracts */}
             <section>
-              <div className="mb-3 flex items-center gap-2">
-                <h3 className="text-lg font-semibold">Договоры</h3>
-                <span className="text-sm text-muted-foreground">{contracts.length}</span>
-              </div>
-              <div className="overflow-hidden rounded-xl border border-border">
+              <SectionTitle title="Договоры" count={contracts.length} muted />
+              <div className="overflow-hidden rounded-xl border border-border bg-white">
                 {contracts.map((c, i) => {
                   const overdue = c.overdue > 0;
                   return (
                     <button
                       key={c.id}
                       onClick={() => setContractDrawer(c)}
-                      className={`flex w-full items-center gap-4 px-4 py-3 text-left transition hover:bg-accent/40 ${
+                      className={`flex w-full items-center gap-4 px-4 py-3 text-left transition hover:bg-muted/40 ${
                         i > 0 ? "border-t border-border" : ""
                       }`}
                     >
-                      <div className="flex-1 min-w-0 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                        <div>
-                          <div className="text-xs text-muted-foreground">Договор</div>
-                          <div className="text-sm font-medium">{c.number}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">Задолженность</div>
-                          <div className="text-sm font-medium">{c.debt.toFixed(1)} млн. ₽</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">Просроченная</div>
-                          <div className={`text-sm font-medium ${overdue ? "text-destructive" : ""}`}>
-                            {overdue ? `${c.overdue.toFixed(1)} млн. ₽ · ${c.overdueDays} дн.` : "нет"}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-muted-foreground">Этап взыскания</div>
-                          <div className="text-sm font-medium">{c.collectionStage ?? "—"}</div>
-                        </div>
+                      <div className="grid min-w-0 flex-1 grid-cols-2 gap-3 sm:grid-cols-5">
+                        <Cell label="Договор" value={c.number} sub={`от ${c.date}`} />
+                        <Cell label="Сумма" value={`${c.amount.toFixed(1)} млн. ₽`} />
+                        <Cell label="Задолженность" value={`${c.debt.toFixed(1)} млн. ₽`} />
+                        <Cell
+                          label="Просрочено"
+                          value={overdue ? `${c.overdue.toFixed(1)} млн. ₽` : "нет"}
+                          sub={overdue ? `${c.overdueDays} дн.` : undefined}
+                          accent={overdue}
+                        />
+                        <Cell label="Этап" value={c.collectionStage ?? "—"} />
                       </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                     </button>
                   );
                 })}
@@ -301,6 +404,7 @@ export function CounterpartyModal({
 
       <RiskDrawer
         risk={editing}
+        initialDecision={initialDecision}
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         onSave={handleSave}
@@ -311,20 +415,129 @@ export function CounterpartyModal({
         measures={allMeasures}
         open={!!contractDrawer}
         onOpenChange={(o) => !o && setContractDrawer(null)}
-        onAddOverdue={(id, amt, days) => {
-          addOverdue(id, amt, days);
-          setContractDrawer((prev) => (prev ? { ...prev, overdue: prev.overdue + amt, overdueDays: Math.max(prev.overdueDays, days) } : prev));
-        }}
+        onAddOverdue={addOverdue}
         onAdvanceStage={(id) => {
           advanceContractStage(id);
           setContractDrawer((prev) => {
             if (!prev) return prev;
-            const stages = ["Досудебное урегулирование", "Судебная работа", "Принудительное взыскание", "Завершение работы"];
+            const stages = [
+              "Досудебное урегулирование",
+              "Судебная работа",
+              "Принудительное взыскание",
+              "Завершение работы",
+            ];
             const i = stages.indexOf(prev.collectionStage ?? "");
             return { ...prev, collectionStage: stages[Math.min(i + 1, stages.length - 1)] || stages[0] };
           });
         }}
       />
     </>
+  );
+}
+
+function Stat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div>
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={`mt-0.5 text-sm font-semibold ${accent ? "text-amber-700" : ""}`}>{value}</div>
+    </div>
+  );
+}
+
+function SectionTitle({
+  title,
+  count,
+  tone,
+  muted,
+}: {
+  title: string;
+  count: number;
+  tone?: "warn";
+  muted?: boolean;
+}) {
+  const cls =
+    tone === "warn"
+      ? "bg-amber-100 text-amber-900"
+      : muted
+        ? "bg-muted text-muted-foreground"
+        : "bg-primary/10 text-primary";
+  return (
+    <div className="mb-3 flex items-center gap-2">
+      <h3 className="text-base font-semibold">{title}</h3>
+      <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${cls}`}>{count}</span>
+    </div>
+  );
+}
+
+function EmptyState({ text }: { text: string }) {
+  return (
+    <div className="rounded-xl border border-dashed border-border bg-white p-6 text-center text-sm text-muted-foreground">
+      {text}
+    </div>
+  );
+}
+
+function DecisionHeader({
+  icon,
+  iconCls,
+  title,
+  statusLabel,
+  statusCls,
+  date,
+  responsible,
+  onEdit,
+  muted,
+}: {
+  icon: React.ReactNode;
+  iconCls: string;
+  title: string;
+  statusLabel: string;
+  statusCls: string;
+  date?: string;
+  responsible?: string;
+  onEdit?: () => void;
+  muted?: boolean;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <div className="flex min-w-0 items-start gap-3">
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconCls}`}>
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <div className={`font-medium ${muted ? "text-muted-foreground" : ""}`}>{title}</div>
+          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            <span className={`rounded-full px-2 py-0.5 font-medium ${statusCls}`}>{statusLabel}</span>
+            {date && <span>{date}</span>}
+            {responsible && <span>· {responsible}</span>}
+          </div>
+        </div>
+      </div>
+      {onEdit && (
+        <button onClick={onEdit} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted">
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Cell({
+  label,
+  value,
+  sub,
+  accent,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  accent?: boolean;
+}) {
+  return (
+    <div className="min-w-0">
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={`truncate text-sm font-medium ${accent ? "text-amber-700" : ""}`}>{value}</div>
+      {sub && <div className="text-[11px] text-muted-foreground">{sub}</div>}
+    </div>
   );
 }
