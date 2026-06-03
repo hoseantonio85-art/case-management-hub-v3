@@ -371,7 +371,10 @@ export default function Index() {
                     return (
                       <button
                         key={t.key}
-                        onClick={() => setFilter(isActive ? null : t.key)}
+                        onClick={() => {
+                          setFilter(isActive ? null : t.key);
+                          setRiskFilter("all");
+                        }}
                         className={`rounded-2xl px-4 py-4 text-left transition ${
                           isActive
                             ? `${t.bg.replace("/60", "")} ring-2 ${t.ring} shadow-md brightness-105 saturate-150`
