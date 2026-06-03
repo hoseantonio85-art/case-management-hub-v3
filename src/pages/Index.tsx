@@ -157,7 +157,7 @@ export default function Index() {
 
   const filtered = useMemo(() => {
     if (!filter) return counterparties;
-    return counterparties.filter((c) => categoryMap[c.id] === filter);
+    return counterparties.filter((c) => c.status === filter);
   }, [filter]);
 
   return (
