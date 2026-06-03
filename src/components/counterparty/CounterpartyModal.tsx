@@ -252,12 +252,12 @@ export function CounterpartyModal({
           <div className="space-y-6 bg-[#F6F6F4] px-6 py-6">
             {/* Section: Requires decision */}
             <section>
-              <SectionTitle title="Требуют решения" count={pending.length} tone="warn" />
-              {pending.length === 0 ? (
+              <SectionTitle title="Требуют решения" count={sortedPending.length} tone="warn" />
+              {sortedPending.length === 0 ? (
                 <EmptyState text="Все сигналы обработаны" />
               ) : (
                 <div className="space-y-2.5">
-                  {pending.map((r) => {
+                  {visiblePending.map((r) => {
                     const p = priorityBadge[r.priority];
                     return (
                       <div key={r.id} className="rounded-xl border border-border bg-white p-4">
@@ -302,6 +302,22 @@ export function CounterpartyModal({
                       </div>
                     );
                   })}
+                  {hiddenPendingCount > 0 && (
+                    <button
+                      onClick={() => setShowAllPending((s) => !s)}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-white py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-muted/30 hover:text-foreground"
+                    >
+                      {showAllPending ? (
+                        <>
+                          <ChevronDown className="h-4 w-4 rotate-180" /> Скрыть
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4" /> Показать ещё {hiddenPendingCount} {hiddenPendingCount === 1 ? "сигнал" : hiddenPendingCount < 5 ? "сигнала" : "сигналов"}
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               )}
             </section>
