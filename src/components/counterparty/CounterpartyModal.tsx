@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Search,
   ChevronRight,
+  ChevronDown,
   Pencil,
   CheckCircle2,
   XCircle,
@@ -47,6 +48,7 @@ export function CounterpartyModal({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [contractDrawer, setContractDrawer] = useState<Contract | null>(null);
   const [stepperError, setStepperError] = useState<string | null>(null);
+  const [showAllPending, setShowAllPending] = useState(false);
 
   useEffect(() => {
     if (counterparty && open) {
@@ -65,6 +67,26 @@ export function CounterpartyModal({
   const totalOverdue = contracts.reduce((acc, c) => acc + c.overdue, 0);
   const currentStage = steps.find((s) => s.status === "current");
   const allMeasures = confirmed.flatMap((r) => r.decision?.measures ?? []);
+
+  const sortedPending = useMemo(() => {
+    const typeOrder: Record<string, number> = {
+      "Банкротство / ликвидация": 7,
+      "Уголовное дело": 6,
+      "Ограничения деятельности": 5,
+      "Административные нарушения": 4,
+      "Неисполнение контракта группы": 3,
+      "Ухудшилось финансовое состояние": 2,
+    };
+    const priorityOrder: Record<string, number> = { high: 3, medium: 2, low: 1 };
+    return [...pending].sort((a, b) => {
+      const pDiff = (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+      if (pDiff !== 0) return pDiff;
+      return (typeOrder[b.type] || 0) - (typeOrder[a.type] || 0);
+    });
+  }, [pending]);
+
+  const visiblePending = showAllPending ? sortedPending : sortedPending.slice(0, 2);
+  const hiddenPendingCount = sortedPending.length - visiblePending.length;
 
   if (!counterparty) return null;
 
@@ -230,12 +252,12 @@ export function CounterpartyModal({
           <div className="space-y-6 bg-[#F6F6F4] px-6 py-6">
             {/* Section: Requires decision */}
             <section>
-              <SectionTitle title="Требуют решения" count={pending.length} tone="warn" />
-              {pending.length === 0 ? (
+              <SectionTitle title="Требуют решения" count={sortedPending.length} tone="warn" />
+              {sortedPending.length === 0 ? (
                 <EmptyState text="Все сигналы обработаны" />
               ) : (
                 <div className="space-y-2.5">
-                  {pending.map((r) => {
+                  {visiblePending.map((r) => {
                     const p = priorityBadge[r.priority];
                     return (
                       <div key={r.id} className="rounded-xl border border-border bg-white p-4">
@@ -280,6 +302,22 @@ export function CounterpartyModal({
                       </div>
                     );
                   })}
+                  {hiddenPendingCount > 0 && (
+                    <button
+                      onClick={() => setShowAllPending((s) => !s)}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border bg-white py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-muted/30 hover:text-foreground"
+                    >
+                      {showAllPending ? (
+                        <>
+                          <ChevronDown className="h-4 w-4 rotate-180" /> Скрыть
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-4 w-4" /> Показать ещё {hiddenPendingCount} {hiddenPendingCount === 1 ? "сигнал" : hiddenPendingCount < 5 ? "сигнала" : "сигналов"}
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               )}
             </section>
