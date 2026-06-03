@@ -8,6 +8,7 @@ import { toneStyles } from "./header-theme";
 
 export function ContractDrawer({
   contract,
+  counterpartyName,
   measures,
   open,
   onOpenChange,
@@ -15,6 +16,7 @@ export function ContractDrawer({
   onAdvanceStage,
 }: {
   contract: Contract | null;
+  counterpartyName?: string;
   measures: string[];
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -27,21 +29,34 @@ export function ContractDrawer({
 
   if (!contract) return null;
   const overdue = contract.overdue > 0;
+  const tone = overdue ? "danger" : "safe";
+  const styles = toneStyles[tone];
+  const tagLabel = overdue ? "Есть просроченная задолженность" : "Без просрочки";
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-xl">
-        <SheetHeader>
-          <div
-            className={`inline-flex w-fit items-center rounded-full px-2.5 py-1 text-[11px] ${
-              overdue ? "bg-amber-100 text-amber-900" : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {overdue ? "Есть просроченная задолженность" : "Без просрочки"}
+      <SheetContent side="right" className="w-full overflow-y-auto p-0 sm:max-w-xl">
+        <div className={`px-6 pt-6 pb-5 ${styles.gradient}`}>
+          <SheetHeader className="space-y-0 text-left">
+            <span className={`inline-flex w-fit items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${styles.badge}`}>
+              {tagLabel}
+            </span>
+            <SheetTitle className="!mt-3 text-2xl font-semibold tracking-tight">{contract.number}</SheetTitle>
+            {counterpartyName && (
+              <p className="!mt-1 text-sm text-muted-foreground">{counterpartyName}</p>
+            )}
+          </SheetHeader>
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <DebtCard label="Задолженность" value={`${contract.debt.toFixed(1)} млн. ₽`} />
+            <DebtCard
+              label="Просроченная задолженность"
+              value={`${contract.overdue.toFixed(1)} млн. ₽`}
+              accent={overdue}
+            />
           </div>
-          <SheetTitle className="!mt-2">{contract.number}</SheetTitle>
-          <p className="text-sm text-muted-foreground">от {contract.date} · сумма {contract.amount.toFixed(1)} млн. ₽</p>
-        </SheetHeader>
+        </div>
+        <div className="px-6 pb-6 pt-2">
+
 
         <div className="mt-6 space-y-5">
           <div className="rounded-xl border border-border bg-white p-4 text-sm">
