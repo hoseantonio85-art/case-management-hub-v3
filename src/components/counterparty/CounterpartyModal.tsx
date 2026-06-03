@@ -24,6 +24,8 @@ import type {
 import { RiskDrawer, type DecisionKind, type RiskSavePayload } from "./RiskDrawer";
 import { ContractDrawer } from "./ContractDrawer";
 import { DebtStepper } from "./DebtStepper";
+import { DebtSummaryCard } from "./DebtSummaryCard";
+import { DebtProcessDrawer } from "./DebtProcessDrawer";
 import { getToneForTag, toneStyles } from "./header-theme";
 
 const priorityBadge: Record<string, { label: string; cls: string }> = {
