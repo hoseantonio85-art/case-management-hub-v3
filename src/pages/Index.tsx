@@ -558,29 +558,40 @@ export default function Index() {
                   >
                     <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                       <div className="flex flex-wrap items-center gap-1.5">
-                        {shownIcons.length === 0 ? (
-                          <span className="text-[10px] text-muted-foreground">Нет признаков</span>
-                        ) : (
-                          shownIcons.map((t) => {
-                            const m = riskMeta[t];
-                            const Icon = m.icon;
-                            return (
-                              <span
-                                key={t}
-                                title={m.label}
-                                className={`inline-flex h-6 w-6 items-center justify-center rounded-full border ${m.activeBorder} ${m.activeBg}`}
-                              >
-                                <Icon className={`h-3.5 w-3.5 ${m.iconColor}`} />
-                              </span>
-                            );
-                          })
-                        )}
+                        {(() => {
+                          const catMeta: Record<CategoryKey, { label: string; cls: string }> = {
+                            risk: { label: "Риск дефолта", cls: "bg-[#FBF1D6] border-[#E9C657]/60 text-[#8B6B14]" },
+                            no_risk: { label: "Нет риска", cls: "bg-[#D6F0E2] border-[#5BC48C]/60 text-[#1E6B43]" },
+                            overdue_risk: { label: "Просрочено с риском дефолта", cls: "bg-[#FBE3D6] border-[#E89669]/60 text-[#8B4A1F]" },
+                            overdue: { label: "Просрочено", cls: "bg-[#FBE9D6] border-[#EDB05A]/60 text-[#8B5A14]" },
+                          };
+                          const cm = catMeta[c.status];
+                          return (
+                            <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-medium ${cm.cls}`}>
+                              {cm.label}
+                            </span>
+                          );
+                        })()}
+                        {shownIcons.map((t) => {
+                          const m = riskMeta[t];
+                          const Icon = m.icon;
+                          return (
+                            <span
+                              key={t}
+                              title={m.label}
+                              className={`inline-flex h-6 w-6 items-center justify-center rounded-full border ${m.activeBorder} ${m.activeBg}`}
+                            >
+                              <Icon className={`h-3.5 w-3.5 ${m.iconColor}`} />
+                            </span>
+                          );
+                        })}
                         {restIcons > 0 && (
                           <span className="inline-flex h-6 items-center rounded-full border border-slate-200 bg-slate-50 px-1.5 text-[10px] font-medium text-slate-600">
                             +{restIcons}
                           </span>
                         )}
                       </div>
+
                       <div className="text-sm font-semibold text-foreground">{c.name}</div>
                       <div className="text-[12px] text-muted-foreground">
                         {c.inn} · {c.contracts.length} дог. · {stage} · изм. {c.lastUpdate}
