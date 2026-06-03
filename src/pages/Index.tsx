@@ -24,11 +24,6 @@ import { CounterpartyModal } from "@/components/counterparty/CounterpartyModal";
 
 type CategoryKey = "risk" | "overdue_risk" | "no_risk" | "overdue";
 
-const categoryMap: Record<string, CategoryKey> = {
-  omega: "overdue_risk",
-  gamma: "overdue",
-};
-
 const tiles: {
   key: CategoryKey;
   title: string;
