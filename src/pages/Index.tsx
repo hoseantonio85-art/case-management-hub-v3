@@ -416,22 +416,36 @@ export default function Index() {
             {/* Список дебиторов */}
             <h2 className="mb-3 text-xl font-semibold">Список дебиторов</h2>
 
-            <div className="mb-5 flex flex-wrap gap-2">
-              {[
-                { label: "Ухудшилось фин. состояние", icon: ArrowDown },
-                { label: "Банкротство/ликвидация", icon: Briefcase },
-                { label: "Просрочена задолженность в группе", icon: UsersRound },
-              ].map((f) => (
-                <button
-                  key={f.label}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1.5 text-xs hover:bg-accent"
-                >
-                  <f.icon className="h-3.5 w-3.5 text-muted-foreground" />
-                  {f.label}
-                  <span className="rounded-full bg-muted px-1.5 text-[10px] text-muted-foreground">5</span>
-                </button>
-              ))}
-            </div>
+            {showRiskChips && (
+              <div className="mb-5 flex flex-wrap gap-2">
+                {riskChipConfig.map((chip) => {
+                  const count = riskCounts[chip.key] ?? 0;
+                  const isActive = riskFilter === chip.key;
+                  const disabled = chip.key !== "all" && count === 0;
+                  return (
+                    <button
+                      key={chip.key}
+                      disabled={disabled}
+                      onClick={() =>
+                        setRiskFilter(isActive && chip.key !== "all" ? "all" : chip.key)
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                        isActive ? `${chip.active} shadow-sm` : chip.idle
+                      } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                    >
+                      {chip.label}
+                      <span
+                        className={`rounded-full px-1.5 py-px text-[10px] ${
+                          isActive ? "bg-white/60" : "bg-white/70 text-muted-foreground"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {filter && (
               <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
