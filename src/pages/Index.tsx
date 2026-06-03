@@ -136,21 +136,22 @@ const categoryPalette: Record<CategoryKey, { amount: string; segments: Segment[]
 };
 
 function Donut({ amount, segments }: { amount: string; segments: Segment[] }) {
-  const size = 220;
-  const stroke = 26;
+  const size = 170;
+  const stroke = 28;
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const total = segments.reduce((s, x) => s + x.value, 0);
+  const gap = 1.5;
   let acc = 0;
+  const innerR = r - stroke / 2;
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} stroke="hsl(var(--muted))" strokeWidth={stroke} fill="none" opacity={0.25} />
         {segments.map((s) => {
-          const len = (s.value / total) * c;
+          const len = Math.max((s.value / total) * c - gap, 0);
           const dash = `${len} ${c - len}`;
           const offset = -acc;
-          acc += len;
+          acc += len + gap;
           return (
             <circle
               key={s.key}
@@ -163,14 +164,25 @@ function Donut({ amount, segments }: { amount: string; segments: Segment[] }) {
               strokeDasharray={dash}
               strokeDashoffset={offset}
               strokeLinecap="butt"
+              opacity={0.55}
               className="transition-all duration-300"
             />
           );
         })}
+        {/* Inner soft contour ring */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={innerR + 1.5}
+          stroke="rgba(255,255,255,0.9)"
+          strokeWidth={2}
+          fill="none"
+        />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-2xl font-semibold tracking-tight">{amount}</div>
-        <div className="-mt-0.5 text-xs text-muted-foreground">млн. ₽</div>
+        <div className="text-lg font-semibold tracking-tight">
+          {amount} <span className="text-xs font-normal text-muted-foreground">млн. ₽</span>
+        </div>
       </div>
     </div>
   );
