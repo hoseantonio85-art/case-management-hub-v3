@@ -68,6 +68,26 @@ export function CounterpartyModal({
   const currentStage = steps.find((s) => s.status === "current");
   const allMeasures = confirmed.flatMap((r) => r.decision?.measures ?? []);
 
+  const sortedPending = useMemo(() => {
+    const typeOrder: Record<string, number> = {
+      "Банкротство / ликвидация": 7,
+      "Уголовное дело": 6,
+      "Ограничения деятельности": 5,
+      "Административные нарушения": 4,
+      "Неисполнение контракта группы": 3,
+      "Ухудшилось финансовое состояние": 2,
+    };
+    const priorityOrder: Record<string, number> = { high: 3, medium: 2, low: 1 };
+    return [...pending].sort((a, b) => {
+      const pDiff = (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
+      if (pDiff !== 0) return pDiff;
+      return (typeOrder[b.type] || 0) - (typeOrder[a.type] || 0);
+    });
+  }, [pending]);
+
+  const visiblePending = showAllPending ? sortedPending : sortedPending.slice(0, 2);
+  const hiddenPendingCount = sortedPending.length - visiblePending.length;
+
   if (!counterparty) return null;
 
   const openDrawer = (r: RiskSignal, decision: DecisionKind) => {
