@@ -15,11 +15,8 @@ import {
   Gauge,
   GraduationCap,
   Headphones,
-  ArrowDown,
-  Briefcase,
-  UsersRound,
 } from "lucide-react";
-import { counterparties, type Counterparty } from "@/lib/mock-data";
+import { counterparties, type Counterparty, type RiskType } from "@/lib/mock-data";
 import { CounterpartyModal } from "@/components/counterparty/CounterpartyModal";
 
 type CategoryKey = "risk" | "overdue_risk" | "no_risk" | "overdue";
@@ -191,14 +188,96 @@ function SidebarItem({
   );
 }
 
+type RiskChipKey = "all" | RiskType;
+
+const riskChipConfig: { key: RiskChipKey; label: string; short: string; active: string; idle: string }[] = [
+  {
+    key: "all",
+    label: "Все признаки",
+    short: "Все",
+    active: "bg-slate-200 border-slate-400 text-slate-900",
+    idle: "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100",
+  },
+  {
+    key: "Ухудшилось финансовое состояние",
+    label: "Финсостояние",
+    short: "Финсостояние",
+    active: "bg-amber-100 border-amber-400 text-amber-900",
+    idle: "bg-amber-50/60 border-amber-200/70 text-amber-800/70 hover:bg-amber-50",
+  },
+  {
+    key: "Уголовное дело",
+    label: "Уголовное дело",
+    short: "Уголовное",
+    active: "bg-red-100 border-red-400 text-red-900",
+    idle: "bg-red-50/60 border-red-200/70 text-red-800/70 hover:bg-red-50",
+  },
+  {
+    key: "Административные нарушения",
+    label: "Адм. нарушения",
+    short: "Адм.",
+    active: "bg-orange-100 border-orange-400 text-orange-900",
+    idle: "bg-orange-50/60 border-orange-200/70 text-orange-800/70 hover:bg-orange-50",
+  },
+  {
+    key: "Неисполнение контракта группы",
+    label: "Неисполнение",
+    short: "Неисполнение",
+    active: "bg-yellow-100 border-yellow-500 text-yellow-900",
+    idle: "bg-yellow-50/60 border-yellow-200/70 text-yellow-800/70 hover:bg-yellow-50",
+  },
+  {
+    key: "Ограничения деятельности",
+    label: "Ограничения",
+    short: "Ограничения",
+    active: "bg-slate-300 border-slate-500 text-slate-900",
+    idle: "bg-slate-100/70 border-slate-200 text-slate-600 hover:bg-slate-200/60",
+  },
+  {
+    key: "Банкротство / ликвидация",
+    label: "Банкротство",
+    short: "Банкротство",
+    active: "bg-rose-100 border-rose-400 text-rose-900",
+    idle: "bg-rose-50/60 border-rose-200/70 text-rose-800/70 hover:bg-rose-50",
+  },
+];
+
+const riskChipShort: Record<RiskType, { short: string; cls: string }> = {
+  "Ухудшилось финансовое состояние": { short: "Финсостояние", cls: "bg-amber-100 text-amber-900" },
+  "Уголовное дело": { short: "Уголовное", cls: "bg-red-100 text-red-900" },
+  "Административные нарушения": { short: "Адм.", cls: "bg-orange-100 text-orange-900" },
+  "Неисполнение контракта группы": { short: "Неисполнение", cls: "bg-yellow-100 text-yellow-900" },
+  "Ограничения деятельности": { short: "Ограничения", cls: "bg-slate-200 text-slate-800" },
+  "Банкротство / ликвидация": { short: "Банкротство", cls: "bg-rose-100 text-rose-900" },
+};
+
 export default function Index() {
   const [active, setActive] = useState<Counterparty | null>(null);
   const [filter, setFilter] = useState<CategoryKey | null>(null);
+  const [riskFilter, setRiskFilter] = useState<RiskChipKey>("all");
 
-  const filtered = useMemo(() => {
+  const byCategory = useMemo(() => {
     if (!filter) return counterparties;
     return counterparties.filter((c) => c.status === filter);
   }, [filter]);
+
+  const showRiskChips = filter !== "no_risk" && filter !== "overdue";
+
+  const riskCounts = useMemo(() => {
+    const map: Record<string, number> = { all: byCategory.length };
+    for (const c of byCategory) {
+      const types = new Set(c.risks.map((r) => r.type));
+      types.forEach((t) => {
+        map[t] = (map[t] ?? 0) + 1;
+      });
+    }
+    return map;
+  }, [byCategory]);
+
+  const filtered = useMemo(() => {
+    if (!showRiskChips || riskFilter === "all") return byCategory;
+    return byCategory.filter((c) => c.risks.some((r) => r.type === riskFilter));
+  }, [byCategory, riskFilter, showRiskChips]);
 
   return (
     <div className="min-h-screen bg-[#F6F6F4]">
@@ -292,7 +371,10 @@ export default function Index() {
                     return (
                       <button
                         key={t.key}
-                        onClick={() => setFilter(isActive ? null : t.key)}
+                        onClick={() => {
+                          setFilter(isActive ? null : t.key);
+                          setRiskFilter("all");
+                        }}
                         className={`rounded-2xl px-4 py-4 text-left transition ${
                           isActive
                             ? `${t.bg.replace("/60", "")} ring-2 ${t.ring} shadow-md brightness-105 saturate-150`
@@ -337,22 +419,36 @@ export default function Index() {
             {/* Список дебиторов */}
             <h2 className="mb-3 text-xl font-semibold">Список дебиторов</h2>
 
-            <div className="mb-5 flex flex-wrap gap-2">
-              {[
-                { label: "Ухудшилось фин. состояние", icon: ArrowDown },
-                { label: "Банкротство/ликвидация", icon: Briefcase },
-                { label: "Просрочена задолженность в группе", icon: UsersRound },
-              ].map((f) => (
-                <button
-                  key={f.label}
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1.5 text-xs hover:bg-accent"
-                >
-                  <f.icon className="h-3.5 w-3.5 text-muted-foreground" />
-                  {f.label}
-                  <span className="rounded-full bg-muted px-1.5 text-[10px] text-muted-foreground">5</span>
-                </button>
-              ))}
-            </div>
+            {showRiskChips && (
+              <div className="mb-5 flex flex-wrap gap-2">
+                {riskChipConfig.map((chip) => {
+                  const count = riskCounts[chip.key] ?? 0;
+                  const isActive = riskFilter === chip.key;
+                  const disabled = chip.key !== "all" && count === 0;
+                  return (
+                    <button
+                      key={chip.key}
+                      disabled={disabled}
+                      onClick={() =>
+                        setRiskFilter(isActive && chip.key !== "all" ? "all" : chip.key)
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                        isActive ? `${chip.active} shadow-sm` : chip.idle
+                      } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
+                    >
+                      {chip.label}
+                      <span
+                        className={`rounded-full px-1.5 py-px text-[10px] ${
+                          isActive ? "bg-white/60" : "bg-white/70 text-muted-foreground"
+                        }`}
+                      >
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {filter && (
               <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
@@ -421,11 +517,36 @@ export default function Index() {
                       <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${tagCls}`}>
                         {c.tag}
                       </span>
-                      {openSignals > 0 && (
-                        <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-900">
-                          {openSignals} сигн.
-                        </span>
-                      )}
+                      {(() => {
+                        const types = Array.from(new Set(c.risks.map((r) => r.type)));
+                        const shown = types.slice(0, 2);
+                        const rest = types.length - shown.length;
+                        return (
+                          <>
+                            {shown.map((t) => {
+                              const cfg = riskChipShort[t];
+                              return (
+                                <span
+                                  key={t}
+                                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-medium ${cfg.cls}`}
+                                >
+                                  {cfg.short}
+                                </span>
+                              );
+                            })}
+                            {rest > 0 && (
+                              <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                + ещё {rest}
+                              </span>
+                            )}
+                            {openSignals > 0 && (
+                              <span className="rounded-full border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-900">
+                                {openSignals} сигн.
+                              </span>
+                            )}
+                          </>
+                        );
+                      })()}
                       <div className="mt-0.5 w-full text-[11px] text-muted-foreground">
                         Этап: {stage} · обн. {c.lastUpdate}
                       </div>
