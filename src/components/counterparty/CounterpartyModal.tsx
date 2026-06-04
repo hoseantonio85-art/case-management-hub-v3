@@ -444,48 +444,49 @@ export function CounterpartyModal({
             </aside>
 
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
 
-      <DebtProcessDrawer
-        steps={steps}
-        open={debtDrawerOpen}
-        onOpenChange={setDebtDrawerOpen}
-        onAdvance={advanceStage}
-        error={stepperError}
-      />
+        {/* In-modal drawers */}
+        <DebtProcessDrawer
+          steps={steps}
+          open={debtDrawerOpen}
+          onOpenChange={setDebtDrawerOpen}
+          onAdvance={advanceStage}
+          error={stepperError}
+        />
 
-      <RiskDrawer
-        risk={editing}
-        initialDecision={initialDecision}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        onSave={handleSave}
-      />
+        <RiskDrawer
+          risk={editing}
+          initialDecision={initialDecision}
+          open={drawerOpen}
+          onOpenChange={setDrawerOpen}
+          onSave={handleSave}
+        />
 
-      <ContractDrawer
-        counterpartyName={counterparty.name}
-        contract={contractDrawer}
-        measures={allMeasures}
-        open={!!contractDrawer}
-        onOpenChange={(o) => !o && setContractDrawer(null)}
-        onAddOverdue={addOverdue}
-        onAdvanceStage={(id) => {
-          advanceContractStage(id);
-          setContractDrawer((prev) => {
-            if (!prev) return prev;
-            const stages = [
-              "Досудебное урегулирование",
-              "Судебная работа",
-              "Принудительное взыскание",
-              "Завершение работы",
-            ];
-            const i = stages.indexOf(prev.collectionStage ?? "");
-            return { ...prev, collectionStage: stages[Math.min(i + 1, stages.length - 1)] || stages[0] };
-          });
-        }}
-      />
-    </>
+        <ContractDrawer
+          counterpartyName={counterparty.name}
+          contract={contractDrawer}
+          measures={allMeasures}
+          open={!!contractDrawer}
+          onOpenChange={(o) => !o && setContractDrawer(null)}
+          onAddOverdue={addOverdue}
+          onAdvanceStage={(id) => {
+            advanceContractStage(id);
+            setContractDrawer((prev) => {
+              if (!prev) return prev;
+              const stages = [
+                "Досудебное урегулирование",
+                "Судебная работа",
+                "Принудительное взыскание",
+                "Завершение работы",
+              ];
+              const i = stages.indexOf(prev.collectionStage ?? "");
+              return { ...prev, collectionStage: stages[Math.min(i + 1, stages.length - 1)] || stages[0] };
+            });
+          }}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
 
