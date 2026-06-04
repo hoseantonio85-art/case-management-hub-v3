@@ -285,6 +285,8 @@ export function ContractDrawer({
     setOccurDate("");
     setDueDate("");
     setOverdueComment("");
+    setShowAddOverdue(false);
+    setOverdueAddedNotice(true);
   };
 
   const allOverdues: LocalOverdue[] = [
