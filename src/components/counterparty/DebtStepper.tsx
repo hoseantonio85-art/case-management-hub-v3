@@ -1,5 +1,6 @@
 import { Check, AlertTriangle } from "lucide-react";
 import type { CollectionSubStep } from "@/lib/mock-data";
+import type { StepAnim } from "./DebtSummaryCard";
 
 const stages = [
   "Досудебное урегулирование",
@@ -12,14 +13,21 @@ export function DebtStepper({
   steps,
   onAdvance,
   error,
-  highlightStepId,
+  stepAnim,
 }: {
   steps: CollectionSubStep[];
   onAdvance?: () => void;
   error?: string | null;
-  highlightStepId?: string | null;
+  stepAnim?: StepAnim;
 }) {
   const current = steps.find((s) => s.status === "current");
+  const animating = !!stepAnim;
+  const isForward = stepAnim?.direction === "forward";
+  const containerFlash = animating
+    ? isForward
+      ? "border-emerald-300 shadow-[0_0_0_4px_rgba(16,185,129,0.08)]"
+      : "border-slate-300 shadow-[0_0_0_4px_rgba(100,116,139,0.08)]"
+    : "border-border";
   return (
     <section>
       <div className="mb-3 flex items-center justify-between gap-2">
