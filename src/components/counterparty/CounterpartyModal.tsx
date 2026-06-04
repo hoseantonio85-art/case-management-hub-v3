@@ -10,7 +10,10 @@ import {
   Clock,
   Calendar,
   X,
+  CheckCircle2,
+  Info as InfoIcon,
 } from "lucide-react";
+import { pickFurthestStepTitle } from "./collection-mapping";
 
 import type {
   Counterparty,
