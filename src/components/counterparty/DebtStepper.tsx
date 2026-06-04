@@ -79,18 +79,10 @@ export function DebtStepper({
                     return (
                     <div key={s.id} className="relative">
                       <div className="absolute -left-[34px] top-0.5">
-                        {s.status === "done" ? (
-                          <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-primary bg-primary text-[10px] font-semibold text-primary-foreground">
-                            <Check className="h-3 w-3" />
-                          </div>
-                        ) : isCurrent ? (
+                        {isCurrent ? (
                           <div
                             key={`cur-${stepAnim?.tick ?? "static"}-${s.id}`}
-                            className={`flex h-6 w-6 items-center justify-center rounded-full border-2 text-[10px] font-semibold transition-transform duration-500 ${
-                              s.overdue
-                                ? "border-amber-500 bg-amber-50 text-amber-700"
-                                : "border-primary bg-primary/10 text-primary"
-                            } ${animateThis ? "scale-125" : "scale-100"}`}
+                            className={`flex h-6 w-6 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-50 text-[10px] font-semibold text-emerald-700 transition-transform duration-500 ${animateThis ? "scale-125" : "scale-100"}`}
                           >
                             {num}
                           </div>
