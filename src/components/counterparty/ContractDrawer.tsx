@@ -110,6 +110,7 @@ export function ContractDrawer({
   const [dueDate, setDueDate] = useState("");
   const [overdueComment, setOverdueComment] = useState("");
   const [localOverdues, setLocalOverdues] = useState<LocalOverdue[]>([]);
+  const [overdueError, setOverdueError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!contract || !open) return;
@@ -135,7 +136,7 @@ export function ContractDrawer({
         user: "NORM AI",
       },
     ]);
-  }, [contract, open]);
+  }, [contract?.id, open]);
 
   const currentTitle = STEPS[stepIdx];
   const nextTitle = STEPS[stepIdx + 1];
@@ -246,16 +247,25 @@ export function ContractDrawer({
   };
 
   const handleAddOverdue = () => {
-    if (!amount || !occurDate) return;
+    const amountNum = Number(amount);
+    if (!amount || !Number.isFinite(amountNum) || amountNum <= 0) {
+      setOverdueError("Введите сумму просрочки");
+      return;
+    }
+    if (!occurDate || !parseDDMMYYYY(occurDate)) {
+      setOverdueError("Укажите дату возникновения просрочки");
+      return;
+    }
+    setOverdueError(null);
     const days = computedDays ?? 0;
     const record: OverdueRecord = {
       date: occurDate,
-      amount: Number(amount) / 1_000_000,
+      amount: amountNum / 1_000_000,
       days,
       comment: overdueComment || undefined,
     };
     onAddOverdue(contract.id, record);
-    setLocalOverdues((prev) => [{ ...record, source: "Ручной ввод" }, ...prev]);
+    setLocalOverdues((prev) => [{ ...record, source: DEFAULT_RESPONSIBLE }, ...prev]);
     setHistory((h) => [
       {
         date: formatDDMMYYYY(TODAY),
@@ -449,17 +459,23 @@ export function ContractDrawer({
             <LabeledInput
               label="Сумма просроченной ДЗ, ₽"
               value={amount}
-              onChange={setAmount}
+              onChange={(v) => {
+                setAmount(v);
+                setOverdueError(null);
+              }}
               placeholder="100000"
             />
             <LabeledInput
               label="Дата возникновения"
               value={occurDate}
-              onChange={setOccurDate}
+              onChange={(v) => {
+                setOccurDate(v);
+                setOverdueError(null);
+              }}
               placeholder="ДД.ММ.ГГГГ"
             />
             <LabeledInput
-              label="Срок исполнения"
+              label="Срок исполнения / дата оплаты"
               value={dueDate}
               onChange={setDueDate}
               placeholder="ДД.ММ.ГГГГ"
@@ -476,8 +492,13 @@ export function ContractDrawer({
               Дней просрочки: <span className="font-medium text-foreground">{computedDays}</span>
             </div>
           )}
+          {overdueError && (
+            <div className="mt-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              {overdueError}
+            </div>
+          )}
           <Button
-            variant="outline"
             className="mt-3 w-full"
             onClick={handleAddOverdue}
             disabled={!amount || !occurDate}
