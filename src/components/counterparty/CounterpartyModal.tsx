@@ -216,8 +216,8 @@ export function CounterpartyModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="relative h-[calc(100vh-32px)] w-[96vw] max-w-5xl gap-0 overflow-hidden rounded-3xl p-0 [&>button]:hidden">
-        <div className="flex h-full flex-col overflow-y-auto">
+      <DialogContent className="h-[calc(100dvh-32px)] max-h-[calc(100dvh-32px)] w-[96vw] max-w-5xl gap-0 overflow-hidden rounded-3xl p-0 [&>button]:hidden">
+        <div className="relative flex h-full flex-col overflow-y-auto">
           {/* Header */}
           {(() => {
             const tone = getToneForTag(counterparty.tag);
