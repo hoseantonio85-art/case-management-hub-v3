@@ -310,6 +310,30 @@ export function CounterpartyModal({
 
           <div className="grid grid-cols-1 gap-6 bg-white px-6 py-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6 min-w-0">
+            {notification && (
+              <div
+                className={`flex items-start gap-2.5 rounded-xl border px-3.5 py-3 text-sm ${
+                  notification.tone === "success"
+                    ? "border-emerald-200 bg-emerald-50/70 text-emerald-900"
+                    : "border-border bg-slate-50 text-foreground"
+                }`}
+                role="status"
+              >
+                {notification.tone === "success" ? (
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                ) : (
+                  <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                )}
+                <div className="flex-1 leading-snug">{notification.text}</div>
+                <button
+                  onClick={() => setNotification(null)}
+                  className="shrink-0 rounded p-0.5 text-muted-foreground transition hover:bg-black/5 hover:text-foreground"
+                  aria-label="Закрыть уведомление"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
             {/* Section: Requires decision */}
             <section>
               <SectionTitle title="Требуют решения" count={sortedPending.length} tone="warn" />
