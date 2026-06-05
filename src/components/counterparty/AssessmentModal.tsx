@@ -27,17 +27,17 @@ const statusMeta: Record<
   confirmed: {
     label: "Подтверждена",
     chip: "bg-emerald-100 text-emerald-800",
-    headerBg: "bg-emerald-50",
+    headerBg: "bg-gradient-to-b from-emerald-50 via-emerald-50/40 to-transparent",
   },
   disagreed: {
     label: "Не согласовано",
     chip: "bg-orange-100 text-orange-900",
-    headerBg: "bg-orange-50",
+    headerBg: "bg-gradient-to-b from-orange-50 via-orange-50/40 to-transparent",
   },
   updated: {
     label: "Обновлена",
     chip: "bg-sky-100 text-sky-900",
-    headerBg: "bg-sky-50",
+    headerBg: "bg-gradient-to-b from-sky-50 via-sky-50/40 to-transparent",
   },
 };
 
