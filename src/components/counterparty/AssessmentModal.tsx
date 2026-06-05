@@ -22,22 +22,22 @@ const statusMeta: Record<
   pending: {
     label: "Требует подтверждения",
     chip: "bg-amber-100 text-amber-900",
-    headerBg: "bg-gradient-to-b from-amber-50 to-white",
+    headerBg: "bg-amber-50",
   },
   confirmed: {
     label: "Подтверждена",
     chip: "bg-emerald-100 text-emerald-800",
-    headerBg: "bg-gradient-to-b from-emerald-50 to-white",
+    headerBg: "bg-emerald-50",
   },
   disagreed: {
     label: "Не согласовано",
     chip: "bg-orange-100 text-orange-900",
-    headerBg: "bg-gradient-to-b from-orange-50 to-white",
+    headerBg: "bg-orange-50",
   },
   updated: {
     label: "Обновлена",
     chip: "bg-sky-100 text-sky-900",
-    headerBg: "bg-gradient-to-b from-sky-50 to-white",
+    headerBg: "bg-sky-50",
   },
 };
 
