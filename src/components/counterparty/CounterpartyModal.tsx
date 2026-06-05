@@ -33,6 +33,9 @@ import {
 import { stepMetaByTitle } from "@/lib/debt-process";
 import { getToneForTag, toneStyles } from "./header-theme";
 import { riskMeta } from "./risk-meta";
+import { AssistantSummaryCard } from "./AssistantSummaryCard";
+import { AssessmentModal } from "./AssessmentModal";
+import { buildAssessment, type Assessment } from "@/lib/assessment-data";
 
 const priorityBadge: Record<string, { label: string; cls: string }> = {
   high: { label: "Высокий приоритет", cls: "bg-amber-100 text-amber-900" },
@@ -67,6 +70,10 @@ export function CounterpartyModal({
   >(null);
   const [completedFields, setCompletedFields] = useState<CompletedFields>({});
   const [history, setHistory] = useState<DebtHistoryEntry[]>([]);
+  const [assessmentOpen, setAssessmentOpen] = useState(false);
+  const [assessment, setAssessment] = useState<Assessment | null>(null);
+  const [assessmentRunning, setAssessmentRunning] = useState(false);
+  const [assessmentUpdatedLabel, setAssessmentUpdatedLabel] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (counterparty && open) {
@@ -77,6 +84,10 @@ export function CounterpartyModal({
       setNotification(null);
       setStepAnim(null);
       setCompletedFields({});
+      setAssessment(buildAssessment(counterparty.name, counterparty.inn, "auto"));
+      setAssessmentUpdatedLabel(undefined);
+      setAssessmentOpen(false);
+      setAssessmentRunning(false);
       const curStep = counterparty.collection.find((s) => s.status === "current");
       setHistory(
         curStep
@@ -485,6 +496,25 @@ export function CounterpartyModal({
             );
           })()}
 
+          <div className="bg-white px-6 pt-5">
+            <AssistantSummaryCard
+              onOpen={() => setAssessmentOpen(true)}
+              onRun={() => {
+                setAssessmentRunning(true);
+                setTimeout(() => {
+                  setAssessment(
+                    buildAssessment(counterparty.name, counterparty.inn, "manual"),
+                  );
+                  setAssessmentUpdatedLabel("Оценка обновлена только что");
+                  setAssessmentRunning(false);
+                  setAssessmentOpen(true);
+                }, 1200);
+              }}
+              running={assessmentRunning}
+              lastUpdatedLabel={assessmentUpdatedLabel}
+            />
+          </div>
+
           <div className="grid grid-cols-1 gap-6 bg-white px-6 py-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-6 min-w-0">
             {notification && (
@@ -767,7 +797,13 @@ export function CounterpartyModal({
           }}
         />
       </DialogContent>
+      <AssessmentModal
+        assessment={assessment}
+        open={assessmentOpen}
+        onOpenChange={setAssessmentOpen}
+      />
     </Dialog>
+
   );
 }
 
