@@ -72,7 +72,7 @@ export function AssessmentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[calc(100dvh-32px)] max-h-[calc(100dvh-32px)] w-[96vw] max-w-3xl gap-0 overflow-hidden rounded-3xl sm:rounded-3xl p-0 [&>button]:hidden">
+      <DialogContent className="h-[calc(100dvh-32px)] max-h-[calc(100dvh-32px)] w-[96vw] max-w-5xl gap-0 overflow-hidden rounded-3xl sm:rounded-3xl p-0 [&>button]:hidden">
         <div className="relative flex h-full flex-col">
           {/* Header */}
           <div className="relative border-b border-border bg-gradient-to-b from-slate-50 to-white px-7 pt-6 pb-5">
@@ -239,23 +239,31 @@ export function AssessmentModal({
           </div>
 
           {/* Footer actions */}
-          <div className="border-t border-border bg-white px-6 py-3">
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <Button variant="ghost" size="sm" onClick={handleDownload}>
-                <Download className="h-4 w-4" /> Скачать
+          <div className="border-t border-border bg-white px-6 py-4">
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Button
+                onClick={handleConfirm}
+                className="h-12 flex-1 rounded-full text-sm font-medium"
+              >
+                <CheckCircle2 className="h-4 w-4" /> Подтвердить
               </Button>
               <Button
                 variant="outline"
-                size="sm"
                 onClick={() => setDisagreeOpen((v) => !v)}
+                className="h-12 flex-1 rounded-full text-sm font-medium"
               >
                 Не согласен
               </Button>
-              <Button size="sm" onClick={handleConfirm}>
-                <CheckCircle2 className="h-4 w-4" /> Подтвердить
+              <Button
+                variant="outline"
+                onClick={handleDownload}
+                className="h-12 flex-1 rounded-full text-sm font-medium"
+              >
+                <Download className="h-4 w-4" /> Скачать
               </Button>
             </div>
           </div>
+
 
           {/* Disagree inline panel */}
           {disagreeOpen && (
