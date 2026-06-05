@@ -60,19 +60,19 @@ export function AssessmentModal({
   const [groupDrawer, setGroupDrawer] = useState<AssessmentGroup | null>(null);
   const [runOpen, setRunOpen] = useState(false);
   const [runInn, setRunInn] = useState(defaultInn ?? "");
-  const wasRunning = useState({ v: false })[0];
+  const wasRunning = useRef(false);
 
   useEffect(() => {
     setRunInn(defaultInn ?? "");
   }, [defaultInn, assessment?.counterpartyName]);
 
   useEffect(() => {
-    if (wasRunning.v && !running) {
+    if (wasRunning.current && !running) {
       setRunOpen(false);
       setNotice({ tone: "success", text: "Оценка обновлена. Требуется подтверждение." });
     }
-    wasRunning.v = !!running;
-  }, [running, wasRunning]);
+    wasRunning.current = !!running;
+  }, [running]);
 
   if (!assessment) return null;
 
