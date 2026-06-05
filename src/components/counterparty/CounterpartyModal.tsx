@@ -817,7 +817,19 @@ export function CounterpartyModal({
         assessment={assessment}
         open={assessmentOpen}
         onOpenChange={setAssessmentOpen}
+        status={assessmentStatus}
+        disagreement={assessmentDisagreement}
+        onConfirm={() => {
+          setAssessmentStatus("confirmed");
+          setAssessmentConfirmedAt(new Date().toLocaleDateString("ru-RU"));
+          setAssessmentDisagreement(null);
+        }}
+        onDisagree={(d) => {
+          setAssessmentDisagreement(d);
+          setAssessmentStatus("disagreed");
+        }}
       />
+
     </Dialog>
 
   );
