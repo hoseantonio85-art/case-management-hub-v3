@@ -138,25 +138,6 @@ export function AssessmentModal({
           {/* Header */}
           <div className={cn("relative border-b border-border px-7 pt-6 pb-5", meta.headerBg)}>
             <div className="absolute right-5 top-5 flex items-center gap-2">
-              {onRun && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 rounded-full px-3 text-xs"
-                  onClick={() => setRunOpen((v) => !v)}
-                  disabled={running}
-                >
-                  {running ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Запуск…
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-3.5 w-3.5" /> Запустить новую оценку
-                    </>
-                  )}
-                </Button>
-              )}
               <button
                 onClick={() => onOpenChange(false)}
                 className="rounded-full bg-white p-1.5 text-muted-foreground hover:bg-muted"
@@ -165,6 +146,7 @@ export function AssessmentModal({
                 <X className="h-4 w-4" />
               </button>
             </div>
+
             <div className="flex flex-wrap items-center gap-2">
               <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${meta.chip}`}>
                 {meta.label}
