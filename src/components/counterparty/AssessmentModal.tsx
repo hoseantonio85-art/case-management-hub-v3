@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { X, Sparkles, CheckCircle2, AlertTriangle, Download, ChevronRight, Info } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { X, Sparkles, CheckCircle2, AlertTriangle, Download, ChevronRight, Info, RefreshCw, Loader2 } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -35,6 +36,9 @@ export function AssessmentModal({
   onOpenChange,
   status,
   disagreement,
+  defaultInn,
+  running,
+  onRun,
   onConfirm,
   onDisagree,
 }: {
@@ -43,6 +47,9 @@ export function AssessmentModal({
   onOpenChange: (o: boolean) => void;
   status: AssessmentStatus;
   disagreement: Disagreement | null;
+  defaultInn?: string;
+  running?: boolean;
+  onRun?: (inn: string) => void;
   onConfirm: () => void;
   onDisagree: (d: Disagreement) => void;
 }) {
@@ -51,6 +58,21 @@ export function AssessmentModal({
   const [disagreeText, setDisagreeText] = useState("");
   const [disagreeReason, setDisagreeReason] = useState(REASONS[0]);
   const [groupDrawer, setGroupDrawer] = useState<AssessmentGroup | null>(null);
+  const [runOpen, setRunOpen] = useState(false);
+  const [runInn, setRunInn] = useState(defaultInn ?? "");
+  const wasRunning = useRef(false);
+
+  useEffect(() => {
+    setRunInn(defaultInn ?? "");
+  }, [defaultInn, assessment?.counterpartyName]);
+
+  useEffect(() => {
+    if (wasRunning.current && !running) {
+      setRunOpen(false);
+      setNotice({ tone: "success", text: "Оценка обновлена. Требуется подтверждение." });
+    }
+    wasRunning.current = !!running;
+  }, [running]);
 
   if (!assessment) return null;
 
@@ -86,13 +108,34 @@ export function AssessmentModal({
         <div className="relative flex h-full flex-col">
           {/* Header */}
           <div className="relative border-b border-border bg-gradient-to-b from-slate-50 to-white px-7 pt-6 pb-5">
-            <button
-              onClick={() => onOpenChange(false)}
-              className="absolute right-5 top-5 rounded-full bg-white/70 p-1.5 text-muted-foreground backdrop-blur hover:bg-white"
-              aria-label="Закрыть"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            <div className="absolute right-5 top-5 flex items-center gap-2">
+              {onRun && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 rounded-full px-3 text-xs"
+                  onClick={() => setRunOpen((v) => !v)}
+                  disabled={running}
+                >
+                  {running ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Запуск…
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-3.5 w-3.5" /> Запустить новую оценку
+                    </>
+                  )}
+                </Button>
+              )}
+              <button
+                onClick={() => onOpenChange(false)}
+                className="rounded-full bg-white/70 p-1.5 text-muted-foreground backdrop-blur hover:bg-white"
+                aria-label="Закрыть"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${meta.cls}`}>
                 {meta.label}
@@ -141,6 +184,59 @@ export function AssessmentModal({
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
+              </div>
+            )}
+
+            {runOpen && onRun && (
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <RefreshCw className="h-4 w-4" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-semibold text-foreground">Запустить новую оценку</div>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      Агент проверит контрагента по 43 критериям благонадёжности. Можно указать любой ИНН.
+                    </p>
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
+                      <div className="flex-1">
+                        <label className="text-[11px] font-medium text-muted-foreground">
+                          ИНН для оценки
+                        </label>
+                        <Input
+                          value={runInn}
+                          onChange={(e) => setRunInn(e.target.value)}
+                          placeholder="ИНН"
+                          className="mt-1 bg-white"
+                          disabled={running}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setRunOpen(false)}
+                          disabled={running}
+                        >
+                          Отмена
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => runInn.trim() && onRun(runInn.trim())}
+                          disabled={running || !runInn.trim()}
+                        >
+                          {running ? (
+                            <>
+                              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Запуск…
+                            </>
+                          ) : (
+                            "Запустить"
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 

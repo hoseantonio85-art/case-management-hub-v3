@@ -504,20 +504,6 @@ export function CounterpartyModal({
           <div className="bg-white px-6 pt-5">
             <AssistantSummaryCard
               onOpen={() => setAssessmentOpen(true)}
-              onRun={() => {
-                setAssessmentRunning(true);
-                setTimeout(() => {
-                  setAssessment(
-                    buildAssessment(counterparty.name, counterparty.inn, "manual"),
-                  );
-                  setAssessmentStatus("updated");
-                  setAssessmentConfirmedAt(undefined);
-                  setAssessmentDisagreement(null);
-                  setAssessmentRunning(false);
-                  setAssessmentOpen(true);
-                }, 1200);
-              }}
-              running={assessmentRunning}
               status={assessmentStatus}
               confirmedAt={assessmentConfirmedAt}
               confirmedBy={ASSESSMENT_USER}
@@ -819,6 +805,18 @@ export function CounterpartyModal({
         onOpenChange={setAssessmentOpen}
         status={assessmentStatus}
         disagreement={assessmentDisagreement}
+        defaultInn={counterparty.inn}
+        running={assessmentRunning}
+        onRun={(inn) => {
+          setAssessmentRunning(true);
+          setTimeout(() => {
+            setAssessment(buildAssessment(counterparty.name, inn, "manual"));
+            setAssessmentStatus("updated");
+            setAssessmentConfirmedAt(undefined);
+            setAssessmentDisagreement(null);
+            setAssessmentRunning(false);
+          }, 1200);
+        }}
         onConfirm={() => {
           setAssessmentStatus("confirmed");
           setAssessmentConfirmedAt(new Date().toLocaleDateString("ru-RU"));
