@@ -15,10 +15,17 @@ import {
   Gauge,
   GraduationCap,
   Headphones,
+  Loader2,
+  X,
 } from "lucide-react";
 import { counterparties, type Counterparty, type RiskType } from "@/lib/mock-data";
 import { CounterpartyModal } from "@/components/counterparty/CounterpartyModal";
 import { riskMeta, allChipMeta, riskOrder } from "@/components/counterparty/risk-meta";
+import { AssessmentModal, type AssessmentStatus, type Disagreement } from "@/components/counterparty/AssessmentModal";
+import { buildAssessment, type Assessment } from "@/lib/assessment-data";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 type CategoryKey = "risk" | "overdue_risk" | "no_risk" | "overdue";
 
@@ -207,6 +214,35 @@ export default function Index() {
   const [active, setActive] = useState<Counterparty | null>(null);
   const [filter, setFilter] = useState<CategoryKey | null>(null);
   const [riskFilter, setRiskFilter] = useState<RiskChipKey>("all");
+  const [runDialogOpen, setRunDialogOpen] = useState(false);
+  const [runInn, setRunInn] = useState("");
+  const [runError, setRunError] = useState<string | null>(null);
+  const [runLoading, setRunLoading] = useState(false);
+  const [manualAssessment, setManualAssessment] = useState<Assessment | null>(null);
+  const [manualAssessmentOpen, setManualAssessmentOpen] = useState(false);
+  const [manualStatus, setManualStatus] = useState<AssessmentStatus>("updated");
+  const [manualDisagreement, setManualDisagreement] = useState<Disagreement | null>(null);
+
+  const handleStartAssessment = () => {
+    const inn = runInn.trim();
+    if (!inn) {
+      setRunError("Введите ИНН контрагента");
+      return;
+    }
+    setRunError(null);
+    setRunLoading(true);
+    setTimeout(() => {
+      const today = new Date().toLocaleDateString("ru-RU");
+      setManualAssessment(buildAssessment("Новый контрагент", inn, "manual", today));
+      setManualStatus("updated");
+      setManualDisagreement(null);
+      setRunLoading(false);
+      setRunDialogOpen(false);
+      setManualAssessmentOpen(true);
+      setRunInn("");
+    }, 1500);
+  };
+
 
   const byCategory = useMemo(() => {
     if (!filter) return counterparties;
@@ -509,6 +545,21 @@ export default function Index() {
               })}
             </div>
 
+            {/* Floating CTA */}
+            <div className="sticky bottom-6 z-30 mt-8 flex justify-center pointer-events-none">
+              <Button
+                onClick={() => {
+                  setRunInn("");
+                  setRunError(null);
+                  setRunDialogOpen(true);
+                }}
+                className="pointer-events-auto h-12 gap-2 rounded-full px-6 text-sm font-semibold shadow-lg shadow-primary/25"
+              >
+                <Sparkles className="h-4 w-4" />
+                Оценить контрагента
+              </Button>
+            </div>
+
           </div>
         </main>
       </div>
@@ -518,6 +569,99 @@ export default function Index() {
         open={!!active}
         onOpenChange={(o) => !o && setActive(null)}
       />
+
+      {/* Run assessment by INN dialog */}
+      <Dialog
+        open={runDialogOpen}
+        onOpenChange={(o) => {
+          if (runLoading) return;
+          setRunDialogOpen(o);
+          if (!o) setRunError(null);
+        }}
+      >
+        <DialogContent className="max-w-md gap-0 rounded-2xl p-0 [&>button]:hidden">
+          <div className="flex items-start gap-3 border-b border-border px-5 pt-5 pb-4">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Sparkles className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-foreground">Оценить контрагента</div>
+              <p className="mt-0.5 text-[12px] text-muted-foreground">
+                Агент проверит контрагента по 43 критериям благонадёжности. Укажите ИНН.
+              </p>
+            </div>
+            <button
+              onClick={() => !runLoading && setRunDialogOpen(false)}
+              className="rounded p-1 text-muted-foreground hover:bg-muted"
+              aria-label="Закрыть"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="px-5 py-4">
+            <label className="text-[11px] font-medium text-muted-foreground">ИНН для оценки</label>
+            <Input
+              value={runInn}
+              onChange={(e) => {
+                setRunInn(e.target.value);
+                if (runError) setRunError(null);
+              }}
+              placeholder="Введите ИНН контрагента"
+              className="mt-1 bg-white"
+              disabled={runLoading}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleStartAssessment();
+              }}
+            />
+            {runError && (
+              <div className="mt-2 text-[12px] text-rose-600">{runError}</div>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setRunDialogOpen(false)}
+              disabled={runLoading}
+            >
+              Отмена
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleStartAssessment}
+              disabled={runLoading || !runInn.trim()}
+            >
+              {runLoading ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Запуск…
+                </>
+              ) : (
+                "Запустить оценку"
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <AssessmentModal
+        assessment={manualAssessment}
+        open={manualAssessmentOpen}
+        onOpenChange={(o) => {
+          setManualAssessmentOpen(o);
+          if (!o) {
+            setManualDisagreement(null);
+          }
+        }}
+        status={manualStatus}
+        disagreement={manualDisagreement}
+        defaultInn={manualAssessment?.inn}
+        onConfirm={() => setManualStatus("confirmed")}
+        onDisagree={(d) => {
+          setManualDisagreement(d);
+          setManualStatus("disagreed");
+        }}
+      />
     </div>
   );
 }
+
