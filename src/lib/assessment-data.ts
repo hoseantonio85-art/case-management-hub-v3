@@ -64,7 +64,6 @@ export type AssessmentGroup = {
   description: string;
   total: number;
   criteria: AssessmentCriterion[];
-  tone: "rose" | "amber" | "slate" | "emerald";
 };
 
 export type AssessmentChange = {
