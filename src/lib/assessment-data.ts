@@ -88,7 +88,6 @@ const legal: AssessmentGroup = {
   id: "legal",
   title: "Юридический статус и правоспособность",
   description: "Проверка статуса ЮЛ, регистрации, ограничений и права заключать договор",
-  tone: "rose",
   total: 10,
   criteria: [
     { number: 1, title: "ЮЛ ликвидировано / в процессе ликвидации / реорганизации путём присоединения", tag: "Критичный риск", source: "ЕГРЮЛ" },
@@ -108,7 +107,6 @@ const management: AssessmentGroup = {
   id: "management",
   title: "Руководство и бенефициары",
   description: "Проверка руководителей, учредителей, связей и изменений в управлении",
-  tone: "amber",
   total: 11,
   criteria: [
     { number: 1, title: "ФИО руководителей в реестре дисквалифицированных лиц", tag: "Не найдены" },
@@ -129,7 +127,6 @@ const finance: AssessmentGroup = {
   id: "finance",
   title: "Финансы и налоги",
   description: "Проверка налоговой дисциплины, долгов, выручки и финансовой устойчивости",
-  tone: "slate",
   total: 10,
   criteria: [
     { number: 1, title: "Не сдаёт налоговую отчётность >1 года", tag: "Не найдено" },
@@ -149,7 +146,6 @@ const court: AssessmentGroup = {
   id: "court",
   title: "Судебная нагрузка и репутация",
   description: "Проверка судебных, исполнительных и репутационных факторов",
-  tone: "emerald",
   total: 12,
   criteria: [
     { number: 1, title: "Списки терроризма / экстремизма", tag: "Не найден" },
