@@ -141,7 +141,7 @@ export function AssessmentModal({
         >
         <div className="relative flex min-h-0 flex-1 flex-col">
           {/* Header */}
-          <div className={cn("relative border-b border-border px-5 pt-6 pb-6 lg:px-10", meta.headerBg)}>
+          <div className={cn("relative px-5 pt-6 pb-6 lg:px-10", meta.headerBg)}>
             <div className="absolute right-5 top-5 flex items-center gap-2">
               <button
                 onClick={() => onOpenChange(false)}
@@ -156,12 +156,13 @@ export function AssessmentModal({
               <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${meta.chip}`}>
                 {meta.label}
               </span>
-              <span className="text-[11px] text-muted-foreground">Оценка контрагента</span>
             </div>
             <h2 className="mt-3 text-xl font-semibold tracking-tight text-foreground">
-              {assessment.counterpartyName}
+              Оценка контрагента
             </h2>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <span>{assessment.counterpartyName}</span>
+              <span>·</span>
               <span>ИНН {assessment.inn}</span>
               <span>·</span>
               <span>ОГРН {defaultOgrn}</span>
@@ -176,11 +177,28 @@ export function AssessmentModal({
                 </>
               )}
             </div>
+            <div className="mt-5 rounded-2xl border border-border bg-white/75 p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-600">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                    NORM AI · Резюме оценки
+                  </div>
+                  <p className="mt-1 text-sm leading-snug text-foreground">{assessment.summary}</p>
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    Выявленные критерии могут быть использованы как основание для сигналов риска.
+                  </p>
+                </div>
+              </div>
+            </div>
             <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <LimitCard label="Расходные сделки" sublabel="Лимит аванса" value="2,5 млн ₽" />
               <LimitCard label="Доходные сделки" sublabel="Лимит дебиторской задолженности" value="4,8 млн ₽" />
             </div>
           </div>
+
 
           {/* Body */}
           <div className="min-h-0 flex-1 space-y-5 overflow-y-auto bg-white px-5 py-6 lg:px-10">
