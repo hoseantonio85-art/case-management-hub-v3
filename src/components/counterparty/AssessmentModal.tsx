@@ -353,13 +353,18 @@ export function AssessmentModal({
                   {assessment.groups.map((g) => {
                     const counts = groupCounts(g);
                     const t = toneStyles[g.tone];
-                    const isPositive = g.id === "positive";
-                    const groupStatus =
-                      counts.detected > 0 && !isPositive
-                        ? "Требует внимания"
-                        : isPositive && counts.detected > 0
-                          ? "Подтверждено частично"
-                          : "Без замечаний";
+                    const hasAttention = counts.attention > 0;
+                    const hasInfo = counts.info > 0;
+                    const groupStatus = hasAttention
+                      ? "Требует внимания"
+                      : hasInfo
+                        ? "Информационные совпадения"
+                        : "Без замечаний";
+                    const middlePart = hasAttention
+                      ? `${counts.attention} требуют внимания`
+                      : hasInfo
+                        ? `${counts.info} информационных совпадений`
+                        : null;
                     return (
                       <button
                         key={g.id}
@@ -373,16 +378,14 @@ export function AssessmentModal({
                           </div>
                           <div className="mt-2 text-[11px] text-muted-foreground">
                             {g.total} {pluralCriteria(g.total)}
+                            {middlePart && (
+                              <>
+                                {" · "}
+                                <span className={hasAttention ? t.iconText : ""}>{middlePart}</span>
+                              </>
+                            )}
                             {" · "}
-                            <span className={counts.detected > 0 ? t.iconText : ""}>
-                              {isPositive
-                                ? `${counts.detected} подтверждено`
-                                : `${counts.detected} выявлено`}
-                            </span>
-                            {" · "}
-                            {isPositive
-                              ? `${counts.review + counts.clear} не подтверждено`
-                              : `${counts.clear} без замечаний`}
+                            {`${counts.clear} без замечаний`}
                           </div>
                           <div className="mt-2">
                             <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${t.chip}`}>
