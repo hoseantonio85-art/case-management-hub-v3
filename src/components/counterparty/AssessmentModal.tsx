@@ -109,6 +109,16 @@ export function AssessmentModal({
     assessment.source === "auto" ? "Автоматический мониторинг" : "Запущено пользователем";
   const savedDisagreement = disagreement;
 
+  const totals = assessment.groups.reduce(
+    (acc, g) => {
+      const c = groupCounts(g);
+      acc.attention += c.attention;
+      acc.detected += c.attention + c.info;
+      return acc;
+    },
+    { attention: 0, detected: 0 },
+  );
+
   const handleConfirm = () => {
     onConfirm();
     setNotice({
