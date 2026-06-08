@@ -491,7 +491,9 @@ export function CounterpartyModal({
                   {counterparty.tag}
                 </span>
                 <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">{counterparty.name}</h2>
-                <div className="mt-1 text-sm text-muted-foreground">{counterparty.inn}</div>
+                <div className="mt-1 text-sm text-muted-foreground">
+                  ИНН {counterparty.inn} · ОГРН {defaultOgrn}
+                </div>
                 <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <DebtCard label="Общая задолженность" value={counterparty.totalDebt} />
                   <DebtCard
