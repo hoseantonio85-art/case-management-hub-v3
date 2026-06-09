@@ -231,7 +231,32 @@ function SidebarItem({
   );
 }
 
-type RiskChipKey = "all" | RiskType;
+type RiskChipKey = "all" | "bankruptcy" | "group" | "negative";
+
+const NEGATIVE_RISK_TYPES: RiskType[] = [
+  "Ухудшилось финансовое состояние",
+  "Уголовное дело",
+  "Ограничения деятельности",
+  "Административные нарушения",
+];
+
+const problemChips: { key: Exclude<RiskChipKey, "all">; meta: typeof riskMeta[RiskType]; matches: (c: Counterparty) => boolean }[] = [
+  {
+    key: "bankruptcy",
+    meta: { ...riskMeta["Банкротство / ликвидация"], label: "Банкротство / ликвидация", short: "Банкротство / ликвидация" },
+    matches: (c) => c.risks.some((r) => r.type === "Банкротство / ликвидация"),
+  },
+  {
+    key: "group",
+    meta: { ...riskMeta["Неисполнение контракта группы"], label: "Неисполнение контракта группы", short: "Неисполнение контракта группы" },
+    matches: (c) => c.risks.some((r) => r.type === "Неисполнение контракта группы"),
+  },
+  {
+    key: "negative",
+    meta: { ...riskMeta["Ухудшилось финансовое состояние"], label: "Наличие негативных факторов", short: "Наличие негативных факторов" },
+    matches: (c) => c.risks.some((r) => NEGATIVE_RISK_TYPES.includes(r.type)),
+  },
+];
 
 export default function Index() {
   const [active, setActive] = useState<Counterparty | null>(null);
