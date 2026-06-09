@@ -197,7 +197,7 @@ export function AssessmentModal({
       setDisagreeErrors(errors);
       return;
     }
-    const groupTitleById = new Map((assessment?.groups ?? []).map((g) => [g.id, g.title]));
+    const groupTitleById = new Map<string, string>((assessment?.groups ?? []).map((g) => [g.id as string, g.title]));
     const groupComments: DisagreementGroup[] = disagreeGroupIds.map((id) => ({
       groupId: id,
       groupTitle: groupTitleById.get(id) ?? id,
