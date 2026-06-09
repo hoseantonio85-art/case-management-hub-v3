@@ -42,11 +42,6 @@ import { buildAssessment, type Assessment } from "@/lib/assessment-data";
 import { defaultOgrn } from "./RegistrationInfoWidget";
 import { RegistrationInfoDrawer } from "./RegistrationInfoDrawer";
 
-const priorityBadge: Record<string, { label: string; cls: string }> = {
-  high: { label: "Высокий приоритет", cls: "bg-amber-100 text-amber-900" },
-  medium: { label: "Средний приоритет", cls: "bg-amber-50 text-amber-800" },
-  low: { label: "Низкий приоритет", cls: "bg-muted text-muted-foreground" },
-};
 
 export function CounterpartyModal({
   counterparty,
