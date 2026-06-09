@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { largeModalContentClass } from "@/lib/modal-styles";
 import { Button } from "@/components/ui/button";
 import {
   ShieldCheck,
