@@ -16,9 +16,10 @@ import {
   GraduationCap,
   Headphones,
   Loader2,
+  SlidersHorizontal,
   X,
 } from "lucide-react";
-import { counterparties, type Counterparty, type RiskType } from "@/lib/mock-data";
+import { counterparties, type Counterparty, type RiskType, type ProcessStage } from "@/lib/mock-data";
 import { CounterpartyModal } from "@/components/counterparty/CounterpartyModal";
 import { riskMeta, allChipMeta, riskOrder } from "@/components/counterparty/risk-meta";
 import { AssessmentModal, type AssessmentStatus, type Disagreement } from "@/components/counterparty/AssessmentModal";
@@ -26,6 +27,9 @@ import { buildAssessment, type Assessment } from "@/lib/assessment-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ProcessFilterDrawer } from "@/components/counterparty/ProcessFilterDrawer";
+import { processMeta, processOrder } from "@/lib/process-meta";
+
 
 type CategoryKey = "risk" | "overdue_risk" | "no_risk" | "overdue";
 
@@ -214,6 +218,8 @@ export default function Index() {
   const [active, setActive] = useState<Counterparty | null>(null);
   const [filter, setFilter] = useState<CategoryKey | null>(null);
   const [riskFilter, setRiskFilter] = useState<RiskChipKey>("all");
+  const [processStage, setProcessStage] = useState<ProcessStage | null>(null);
+  const [processDrawerOpen, setProcessDrawerOpen] = useState(false);
   const [runDialogOpen, setRunDialogOpen] = useState(false);
   const [runInn, setRunInn] = useState("");
   const [runError, setRunError] = useState<string | null>(null);
@@ -222,6 +228,7 @@ export default function Index() {
   const [manualAssessmentOpen, setManualAssessmentOpen] = useState(false);
   const [manualStatus, setManualStatus] = useState<AssessmentStatus>("updated");
   const [manualDisagreement, setManualDisagreement] = useState<Disagreement | null>(null);
+
 
   const handleStartAssessment = () => {
     const inn = runInn.trim();
@@ -244,10 +251,26 @@ export default function Index() {
   };
 
 
+  const processCounts = useMemo(() => {
+    const map = { monitoring: 0, risk_confirmation: 0, settlement: 0, writeoff: 0 } as Record<ProcessStage, number>;
+    for (const c of counterparties) map[c.processStage]++;
+    return map;
+  }, []);
+
+  const byProcess = useMemo(() => {
+    if (!processStage) return counterparties;
+    return counterparties.filter((c) => c.processStage === processStage);
+  }, [processStage]);
+
+  const allowedCategories = useMemo(() => {
+    if (!processStage) return null;
+    return new Set(processMeta[processStage].allowedCategories);
+  }, [processStage]);
+
   const byCategory = useMemo(() => {
-    if (!filter) return counterparties;
-    return counterparties.filter((c) => c.status === filter);
-  }, [filter]);
+    if (!filter) return byProcess;
+    return byProcess.filter((c) => c.status === filter);
+  }, [byProcess, filter]);
 
   const showRiskChips = filter !== "no_risk" && filter !== "overdue";
 
@@ -266,6 +289,15 @@ export default function Index() {
     if (!showRiskChips || riskFilter === "all") return byCategory;
     return byCategory.filter((c) => c.risks.some((r) => r.type === riskFilter));
   }, [byCategory, riskFilter, showRiskChips]);
+
+  const applyProcessStage = (stage: ProcessStage | null) => {
+    setProcessStage(stage);
+    if (stage && filter && !processMeta[stage].allowedCategories.includes(filter)) {
+      setFilter(null);
+      setRiskFilter("all");
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-white">
@@ -350,16 +382,37 @@ export default function Index() {
             </div>
 
             {/* Дебиторская задолженность */}
-            <h2 className="mb-3 text-xl font-semibold">Дебиторская задолженность</h2>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-xl font-semibold">Дебиторская задолженность</h2>
+              <button
+                onClick={() => setProcessDrawerOpen(true)}
+                className={`inline-flex h-9 items-center gap-2 rounded-full border px-3.5 text-sm font-medium transition ${
+                  processStage
+                    ? "border-primary/40 bg-primary/5 text-primary"
+                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                <SlidersHorizontal className="h-4 w-4" />
+                Фильтр
+                {processStage && (
+                  <span className="ml-0.5 rounded-full bg-primary/15 px-1.5 py-px text-[10px] font-semibold">
+                    1
+                  </span>
+                )}
+              </button>
+            </div>
             <div className="mb-8 rounded-2xl border border-border bg-white p-5">
               <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_auto]">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {tiles.map((t) => {
                     const isActive = filter === t.key;
+                    const disabled = !!allowedCategories && !allowedCategories.has(t.key);
                     return (
                       <button
                         key={t.key}
+                        disabled={disabled}
                         onClick={() => {
+                          if (disabled) return;
                           setFilter(isActive ? null : t.key);
                           setRiskFilter("all");
                         }}
@@ -367,7 +420,7 @@ export default function Index() {
                           isActive
                             ? `${t.bg.replace("/60", "")} ring-2 ${t.ring} shadow-md brightness-105 saturate-150`
                             : `${t.bg} ring-1 ring-inset ring-transparent hover:ring-2 ${filter ? "opacity-60" : ""}`
-                        }`}
+                        } ${disabled ? "!opacity-40 !cursor-not-allowed hover:ring-0" : ""}`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="text-sm text-foreground/80">{t.title}</div>
@@ -383,6 +436,7 @@ export default function Index() {
                     );
                   })}
                 </div>
+
 
                 <div className="flex items-center gap-6">
                   <ul className="space-y-2 text-sm">
@@ -406,6 +460,24 @@ export default function Index() {
 
             {/* Список дебиторов */}
             <h2 className="mb-3 text-xl font-semibold">Список дебиторов</h2>
+
+            {processStage && (
+              <div className="mb-3 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+                  Процесс: {processMeta[processStage].label}
+                  <button
+                    onClick={() => applyProcessStage(null)}
+                    className="ml-0.5 rounded-full p-0.5 hover:bg-primary/10"
+                    aria-label="Снять процесс"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Проблемы показаны в рамках выбранного процесса
+                </span>
+              </div>
+            )}
 
             {showRiskChips && (
               <div className="mb-5 flex flex-wrap gap-2">
@@ -660,6 +732,14 @@ export default function Index() {
           setManualDisagreement(d);
           setManualStatus("disagreed");
         }}
+      />
+
+      <ProcessFilterDrawer
+        open={processDrawerOpen}
+        onOpenChange={setProcessDrawerOpen}
+        value={processStage}
+        onApply={applyProcessStage}
+        counts={processCounts}
       />
     </div>
   );
