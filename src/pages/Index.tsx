@@ -741,25 +741,38 @@ export default function Index() {
               <X className="h-4 w-4" />
             </button>
           </div>
-          <div className="px-5 py-4">
-            <label className="text-[11px] font-medium text-muted-foreground">ИНН для оценки</label>
-            <Input
-              value={runInn}
-              onChange={(e) => {
-                setRunInn(e.target.value);
-                if (runError) setRunError(null);
-              }}
-              placeholder="Введите ИНН контрагента"
-              className="mt-1 bg-white"
-              disabled={runLoading}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") handleStartAssessment();
-              }}
-            />
-            {runError && (
-              <div className="mt-2 text-[12px] text-rose-600">{runError}</div>
-            )}
-          </div>
+          {runLoading ? (
+            <div className="flex items-start gap-3 px-5 py-6">
+              <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-primary" />
+              <div className="min-w-0">
+                <div className="text-sm font-medium text-foreground">
+                  Запускаю оценку контрагента
+                </div>
+                <p className="mt-1 text-[12px] text-muted-foreground">
+                  Проверяю регистрационные данные, финансовые маркеры и судебную нагрузку
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="px-5 py-4">
+              <label className="text-[11px] font-medium text-muted-foreground">ИНН</label>
+              <Input
+                value={runInn}
+                onChange={(e) => {
+                  setRunInn(e.target.value);
+                  if (runError) setRunError(null);
+                }}
+                placeholder="Введите ИНН контрагента"
+                className="mt-1 bg-white"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleStartAssessment();
+                }}
+              />
+              {runError && (
+                <div className="mt-2 text-[12px] text-rose-600">{runError}</div>
+              )}
+            </div>
+          )}
           <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
             <Button
               variant="ghost"
