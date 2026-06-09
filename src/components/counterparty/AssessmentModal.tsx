@@ -178,6 +178,14 @@ export function AssessmentModal({
                   <span>Следующая проверка: {assessment.nextCheck}</span>
                 </>
               )}
+              <span>·</span>
+              <button
+                type="button"
+                onClick={() => setRegistrationOpen(true)}
+                className="cursor-pointer text-primary transition hover:underline"
+              >
+                Подробнее
+              </button>
             </div>
             <div className="mt-5 rounded-2xl border border-border bg-white/75 p-4">
               <div className="flex items-start gap-3">
