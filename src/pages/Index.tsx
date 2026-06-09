@@ -360,40 +360,29 @@ export default function Index() {
     return byCategory.filter((c) => c.risks.some((r) => r.type === riskFilter));
   }, [byCategory, riskFilter, showRiskChips]);
 
-  // Donut data: overview when no tile selected, drilldown by overdue buckets otherwise.
+  // Donut data:
+  //  - 0 selected   → overview (top categories)
+  //  - 1 selected   → drilldown by overdue buckets within that category
+  //  - 2+ selected  → process_categories: one segment per selected tile (top-category colors/labels)
   const donutData = useMemo(() => {
     if (selectedTiles.size === 0) {
       return { amount: "4,7", segments: defaultSegments };
     }
-    // Pick the "leading" category for color palette: prefer overdue_risk > overdue > risk > no_risk
-    const priority: CategoryKey[] = ["overdue_risk", "overdue", "risk", "no_risk"];
-    const leading = priority.find((k) => selectedTiles.has(k))!;
-    const palette = categoryPalette[leading].segments;
-
-    // Aggregate breakdown buckets across all selected categories, keyed by label.
-    const buckets = new Map<string, { key: string; label: string; value: number; color: string }>();
+    if (selectedTiles.size === 1) {
+      const key = Array.from(selectedTiles)[0] as CategoryKey;
+      const cat = categoryPalette[key];
+      return { amount: cat.amount, segments: cat.segments };
+    }
+    // process_categories
+    const segs: Segment[] = [];
     let total = 0;
     for (const t of tiles) {
       if (!selectedTiles.has(t.key)) continue;
-      total += parseFloat(categoryPalette[t.key].amount.replace(",", "."));
-      for (const seg of categoryPalette[t.key].segments) {
-        const existing = buckets.get(seg.label);
-        if (existing) {
-          existing.value += seg.value;
-        } else {
-          // Use color from the leading palette so the whole ring lives in one color family.
-          const leadSeg = palette.find((p) => p.label === seg.label) ?? seg;
-          buckets.set(seg.label, {
-            key: seg.label,
-            label: seg.label,
-            value: seg.value,
-            color: leadSeg.color,
-          });
-        }
-      }
+      const val = parseFloat(categoryPalette[t.key].amount.replace(",", "."));
+      total += val;
+      segs.push({ key: t.key, label: t.title, value: val, color: t.dot });
     }
-    const segments = Array.from(buckets.values()).filter((s) => s.value > 0);
-    return { amount: total.toFixed(1).replace(".", ","), segments };
+    return { amount: total.toFixed(1).replace(".", ","), segments: segs };
   }, [selectedTiles]);
 
   const toggleTile = (key: CategoryKey) => {
