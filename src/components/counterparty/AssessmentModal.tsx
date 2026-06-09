@@ -518,25 +518,15 @@ function LimitCard({ label, sublabel, value }: { label: string; sublabel: string
 
 
 
-const pillStyles: Record<"attention" | "info" | "clear", { bg: string; icon: string; num: string }> = {
-  attention: { bg: "bg-rose-50", icon: "text-rose-500", num: "text-rose-700" },
-  info: { bg: "bg-amber-50", icon: "text-amber-600", num: "text-amber-700" },
-  clear: { bg: "bg-emerald-50", icon: "text-emerald-600", num: "text-emerald-700" },
-};
+import { assessmentCountMeta, type AssessmentCountKind } from "./assessment-count-meta";
 
-const pillIcon: Record<"attention" | "info" | "clear", typeof Flame> = {
-  attention: Flame,
-  info: Zap,
-  clear: CheckCircle2,
-};
-
-function CountPill({ kind, count }: { kind: "attention" | "info" | "clear"; count: number }) {
-  const s = pillStyles[kind];
-  const Ico = pillIcon[kind];
+function CountPill({ kind, count }: { kind: AssessmentCountKind; count: number }) {
+  const m = assessmentCountMeta[kind];
+  const Ico = m.icon;
   return (
-    <span className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-semibold ${s.bg}`}>
-      <Ico className={`h-3.5 w-3.5 ${s.icon}`} />
-      <span className={`leading-none ${s.num}`}>{count}</span>
+    <span className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-sm font-semibold ${m.bg}`}>
+      <Ico className={`h-3.5 w-3.5 ${m.icon_color}`} />
+      <span className={`leading-none ${m.num}`}>{count}</span>
     </span>
   );
 }
