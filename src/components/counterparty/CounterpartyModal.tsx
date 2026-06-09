@@ -40,6 +40,11 @@ import { buildAssessment, type Assessment } from "@/lib/assessment-data";
 import { defaultOgrn } from "./RegistrationInfoWidget";
 import { RegistrationInfoDrawer } from "./RegistrationInfoDrawer";
 
+const toFiniteNumber = (value: unknown) => {
+  const numberValue = Number(value ?? 0);
+  return Number.isFinite(numberValue) ? numberValue : 0;
+};
+
 
 export function CounterpartyModal({
   counterparty,
@@ -125,8 +130,7 @@ export function CounterpartyModal({
   const dismissed = useMemo(() => risks.filter((r) => r.status === "dismissed"), [risks]);
   const decidedCount = confirmed.length + dismissed.length + verification.length;
   const totalOverdue = contracts.reduce((acc, c) => {
-    const value = Number(c?.overdue ?? 0);
-    return acc + (Number.isFinite(value) ? value : 0);
+    return acc + toFiniteNumber(c?.overdue);
   }, 0);
   const totalOverdueLabel = `${totalOverdue.toFixed(1)} млн. ₽`;
   const currentStage = steps.find((s) => s.status === "current");
@@ -153,8 +157,7 @@ export function CounterpartyModal({
   const maxOverdueDays = useMemo(
     () =>
       contracts.reduce((m, c) => {
-        const value = Number(c?.overdueDays ?? 0);
-        return Math.max(m, Number.isFinite(value) ? value : 0);
+        return Math.max(m, toFiniteNumber(c?.overdueDays));
       }, 0),
     [contracts],
   );
@@ -440,8 +443,8 @@ export function CounterpartyModal({
         c.id === id
           ? {
               ...c,
-              overdue: Number(c.overdue ?? 0) + Number(record.amount ?? 0),
-              overdueDays: Math.max(Number(c.overdueDays ?? 0), Number(record.days ?? 0)),
+              overdue: toFiniteNumber(c.overdue) + toFiniteNumber(record.amount),
+              overdueDays: Math.max(toFiniteNumber(c.overdueDays), toFiniteNumber(record.days)),
               overdueHistory: [record, ...(c.overdueHistory ?? [])],
             }
           : c,
@@ -451,8 +454,8 @@ export function CounterpartyModal({
       prev && prev.id === id
         ? {
             ...prev,
-            overdue: Number(prev.overdue ?? 0) + Number(record.amount ?? 0),
-            overdueDays: Math.max(Number(prev.overdueDays ?? 0), Number(record.days ?? 0)),
+            overdue: toFiniteNumber(prev.overdue) + toFiniteNumber(record.amount),
+            overdueDays: Math.max(toFiniteNumber(prev.overdueDays), toFiniteNumber(record.days)),
             overdueHistory: [record, ...(prev.overdueHistory ?? [])],
           }
         : prev,
