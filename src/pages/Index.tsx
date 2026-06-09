@@ -789,12 +789,7 @@ export default function Index() {
       <AssessmentModal
         assessment={manualAssessment}
         open={manualAssessmentOpen}
-        onOpenChange={(o) => {
-          setManualAssessmentOpen(o);
-          if (!o) {
-            setManualDisagreement(null);
-          }
-        }}
+        onOpenChange={handleManualAssessmentOpenChange}
         status={manualStatus}
         disagreement={manualDisagreement}
         defaultInn={manualAssessment?.inn}
@@ -803,6 +798,12 @@ export default function Index() {
           setManualDisagreement(d);
           setManualStatus("disagreed");
         }}
+      />
+
+      <CounterpartyModal
+        counterparty={manualFlowTarget}
+        open={manualFlowCpOpen}
+        onOpenChange={handleManualFlowCpOpenChange}
       />
 
       <ProcessFilterDrawer
