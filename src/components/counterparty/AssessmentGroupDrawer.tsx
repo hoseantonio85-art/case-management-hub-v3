@@ -13,6 +13,7 @@ import {
   tagColorClass,
 } from "@/lib/assessment-data";
 import { AlertTriangle, Info, CheckCircle2 } from "lucide-react";
+import { assessmentCountMeta, type AssessmentCountKind } from "./assessment-count-meta";
 
 export function AssessmentGroupDrawer({
   group,
@@ -41,11 +42,10 @@ export function AssessmentGroupDrawer({
         </div>
         <h3 className="mt-1 pr-8 text-lg font-semibold text-foreground">{group.title}</h3>
         <p className="mt-1 text-xs text-muted-foreground">{group.description}</p>
-        <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <Stat label="Всего" value={group.total} />
-          <Stat label="Требуют внимания" value={counts.attention} />
-          <Stat label="Информационные совпадения" value={counts.info} />
-          <Stat label="Без замечаний" value={counts.clear} />
+        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <SummaryStat kind="attention" value={counts.attention} />
+          <SummaryStat kind="info" value={counts.info} />
+          <SummaryStat kind="clear" value={counts.clear} />
         </div>
 
       </div>
@@ -85,11 +85,22 @@ export function AssessmentGroupDrawer({
   );
 }
 
-function Stat({ label, value, tone }: { label: string; value: number; tone?: string }) {
+function SummaryStat({ kind, value }: { kind: AssessmentCountKind; value: number }) {
+  const m = assessmentCountMeta[kind];
+  const Ico = m.icon;
   return (
-    <div className="rounded-lg border border-border bg-white px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className={`mt-0.5 text-base font-semibold ${tone ?? "text-foreground"}`}>{value}</div>
+    <div className="rounded-xl border border-border bg-white px-3 py-2.5">
+      <div className="flex items-center gap-2">
+        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${m.bg}`}>
+          <Ico className={`h-4 w-4 ${m.icon_color}`} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground leading-tight">
+            {m.label}
+          </div>
+          <div className={`text-base font-semibold leading-tight ${m.num}`}>{value}</div>
+        </div>
+      </div>
     </div>
   );
 }
