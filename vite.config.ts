@@ -6,7 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 // https://vitejs.dev/config/
 export default defineConfig({
   // base используется как basename для BrowserRouter в src/App.tsx — для GitHub Pages
-  base: "/case-management-hub/",
+  base: "/case-management-hub-c73e3020/",
   plugins: [react(), tailwindcss(), tsconfigPaths()],
   server: {
     host: "::",
