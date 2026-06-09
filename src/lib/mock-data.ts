@@ -67,6 +67,8 @@ export interface CollectionSubStep {
   nextAction?: string;
 }
 
+export type ProcessStage = "monitoring" | "risk_confirmation" | "settlement" | "writeoff";
+
 export interface Counterparty {
   id: string;
   name: string;
@@ -80,6 +82,7 @@ export interface Counterparty {
   contracts: Contract[];
   risks: RiskSignal[];
   collection: CollectionSubStep[];
+  processStage: ProcessStage;
 }
 
 export type RiskType =
