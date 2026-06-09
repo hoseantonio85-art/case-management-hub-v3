@@ -355,31 +355,23 @@ export function AssessmentModal({
                 <div className="grid grid-cols-1 gap-2.5">
                   {assessment.groups.map((g) => {
                     const counts = groupCounts(g);
-                    const hasAttention = counts.attention > 0;
-                    const hasInfo = counts.info > 0;
-                    const middlePart = hasAttention
-                      ? `${counts.attention} требуют внимания`
-                      : hasInfo
-                        ? `${counts.info} информационных совпадений`
-                        : null;
                     return (
                       <button
                         key={g.id}
                         onClick={() => setGroupDrawer(g)}
-                        className="group flex items-center gap-3 rounded-lg border border-border bg-white px-3.5 py-3 text-left transition hover:bg-muted/30"
+                        className="group flex items-center gap-3 rounded-lg border border-border bg-white px-3.5 py-3.5 text-left transition hover:bg-muted/30"
                       >
                         <div className="min-w-0 flex-1">
                           <div className="text-sm font-medium text-foreground">{g.title}</div>
-                          <div className="mt-1 text-[11px] text-muted-foreground">
-                            {g.total} {pluralCriteria(g.total)}
-                            {middlePart && (
-                              <>
-                                {" · "}
-                                {middlePart}
-                              </>
+                          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                            <CountPill
+                              kind="attention"
+                              count={counts.attention}
+                            />
+                            {counts.info > 0 && (
+                              <CountPill kind="info" count={counts.info} />
                             )}
-                            {" · "}
-                            {`${counts.clear} без замечаний`}
+                            <CountPill kind="clear" count={counts.clear} />
                           </div>
                         </div>
                         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-foreground" />
