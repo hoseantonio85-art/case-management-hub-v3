@@ -301,11 +301,6 @@ export function AssessmentModal({
               <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${resolutionBadge.chip}`}>
                 {resolutionBadge.label}
               </span>
-              {statusBadge && (
-                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${statusBadge.chip}`}>
-                  {statusBadge.label}
-                </span>
-              )}
             </div>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
               Оценка контрагента
