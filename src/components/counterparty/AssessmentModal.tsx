@@ -261,7 +261,7 @@ export function AssessmentModal({
 
 
   const handleDownload = () => {
-    setNotice({ tone: "info", text: "Отчёт по оценке скачан" });
+    toast.success("Отчёт скачан");
   };
 
 
