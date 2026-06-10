@@ -76,7 +76,7 @@ export function KeyAnomaliesWidget() {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white p-4">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4">
       <div className="flex items-center gap-1.5">
         <div className="text-sm font-semibold text-foreground">Ключевые аномалии</div>
         <span
