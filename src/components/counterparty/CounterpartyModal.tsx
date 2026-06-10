@@ -767,50 +767,6 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
-function DecisionHeader({
-  icon,
-  iconCls,
-  title,
-  statusLabel,
-  statusCls,
-  date,
-  responsible,
-  onEdit,
-  muted,
-}: {
-  icon: React.ReactNode;
-  iconCls: string;
-  title: string;
-  statusLabel: string;
-  statusCls: string;
-  date?: string;
-  responsible?: string;
-  onEdit?: () => void;
-  muted?: boolean;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex min-w-0 items-start gap-3">
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconCls}`}>
-          {icon}
-        </div>
-        <div className="min-w-0">
-          <div className={`font-medium ${muted ? "text-muted-foreground" : ""}`}>{title}</div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-            <span className={`rounded-full px-2 py-0.5 font-medium ${statusCls}`}>{statusLabel}</span>
-            {date && <span>{date}</span>}
-            {responsible && <span>· {responsible}</span>}
-          </div>
-        </div>
-      </div>
-      {onEdit && (
-        <button onClick={onEdit} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted">
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
-      )}
-    </div>
-  );
-}
 
 function Cell({
   label,
