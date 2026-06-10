@@ -157,11 +157,6 @@ export function CounterpartyModal({
 
   if (!counterparty) return null;
 
-  const openDrawer = (r: RiskSignal, decision: DecisionKind) => {
-    setEditing(r);
-    setInitialDecision(decision);
-    setDrawerOpen(true);
-  };
 
   const moveCurrentStep = (delta: 1 | -1) => {
     setSteps((prev) => {
