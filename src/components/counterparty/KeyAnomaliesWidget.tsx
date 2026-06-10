@@ -76,7 +76,7 @@ export function KeyAnomaliesWidget() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-white p-4">
+    <div className="rounded-2xl border border-slate-100 bg-white p-4">
       <div className="flex items-center gap-1.5">
         <div className="text-sm font-semibold text-foreground">Ключевые аномалии</div>
         <span
@@ -101,7 +101,9 @@ export function KeyAnomaliesWidget() {
                 aria-expanded={isOpen}
                 className={cn(
                   "w-full rounded-xl border p-3 text-left transition-colors",
-                  isOpen ? "border-foreground/20 bg-muted/40" : "border-border bg-white hover:bg-muted/30",
+                  isOpen
+                    ? "border-slate-200 bg-slate-50"
+                    : "border-slate-100 bg-slate-50/60 hover:bg-slate-50",
                 )}
               >
                 <div className="flex items-start gap-2">
@@ -114,8 +116,15 @@ export function KeyAnomaliesWidget() {
                     >
                       {meta.label}
                     </span>
-                    <div className="mt-1 text-sm font-medium text-foreground">{a.title}</div>
-                    <div className="mt-0.5 text-xs leading-snug text-muted-foreground">{a.short}</div>
+                    <div className="mt-1 text-sm font-semibold leading-snug text-foreground">{a.title}</div>
+                    <div
+                      className={cn(
+                        "mt-0.5 text-xs leading-snug text-muted-foreground",
+                        !isOpen && "line-clamp-1",
+                      )}
+                    >
+                      {a.short}
+                    </div>
                     {isOpen && (
                       <div className="mt-2 text-xs leading-relaxed text-foreground/80">{a.full}</div>
                     )}
@@ -132,6 +141,7 @@ export function KeyAnomaliesWidget() {
           );
         })}
       </ul>
+
 
       {hiddenCount > 0 && (
         <button
