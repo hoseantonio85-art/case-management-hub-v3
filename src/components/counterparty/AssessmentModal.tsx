@@ -289,10 +289,15 @@ export function AssessmentModal({
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${meta.chip}`}>
-                {meta.label}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${resolutionBadge.chip}`}>
+                {resolutionBadge.label}
               </span>
+              {statusBadge && (
+                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${statusBadge.chip}`}>
+                  {statusBadge.label}
+                </span>
+              )}
             </div>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
               Оценка контрагента
