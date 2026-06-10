@@ -621,7 +621,7 @@ export default function Index() {
                           </span>
                         </div>
                         <div className="mt-3 flex items-end justify-between">
-                          <div className="text-2xl font-semibold tracking-tight">{t.amount}</div>
+                          <div className="text-xl font-medium tracking-tight">{t.amount}</div>
                           <div className="text-xs text-muted-foreground">{t.count}</div>
                         </div>
                       </button>
