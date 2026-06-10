@@ -3,7 +3,6 @@ import {
   Search,
   ChevronDown,
   Sparkles,
-  ChevronRight,
   UserCog,
   Home,
   CalendarClock,
