@@ -86,9 +86,9 @@ export function AssessmentGroupDrawer({
 
       {/* Body — flat list of criteria, no category sections */}
       <div className="px-6 pb-6">
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {filteredCriteria.map((c) => (
-            <CriterionCard key={c.number} c={c} />
+            <CriterionCard key={`${c.number}-${activeFilter ?? "all"}`} c={c} />
           ))}
           {filteredCriteria.length === 0 && (
             <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-6 text-center">
