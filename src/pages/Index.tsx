@@ -3,7 +3,6 @@ import {
   Search,
   ChevronDown,
   Sparkles,
-  ChevronRight,
   UserCog,
   Home,
   CalendarClock,
@@ -774,11 +773,6 @@ export default function Index() {
                       >
                         {c.overdueAmountNum > 0 ? c.overdueDebt : "—"}
                       </div>
-                    </div>
-                    <div className="shrink-0">
-                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-white text-muted-foreground">
-                        <ChevronRight className="h-4 w-4" />
-                      </span>
                     </div>
                   </button>
                 );
