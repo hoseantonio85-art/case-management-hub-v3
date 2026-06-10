@@ -85,6 +85,8 @@ export function AssessmentModal({
   onRun,
   onConfirm,
   onDisagree,
+  onBack,
+  onCloseFlow,
 }: {
   assessment: Assessment | null;
   open: boolean;
@@ -96,6 +98,8 @@ export function AssessmentModal({
   onRun?: (inn: string) => void;
   onConfirm: () => void;
   onDisagree: (d: Disagreement) => void;
+  onBack?: () => void;
+  onCloseFlow?: () => void;
 }) {
   const [notice, setNotice] = useState<{ tone: "success" | "info"; text: string } | null>(null);
   const [groupDrawer, setGroupDrawer] = useState<AssessmentGroup | null>(null);
