@@ -230,6 +230,23 @@ export function AssessmentModal({
       ? "updated"
       : status;
   const meta = statusMeta[effectiveStatus];
+  const resolutionBadge = {
+    label: "Не заключать сделки",
+    chip: "bg-rose-100 text-rose-900",
+  };
+  const statusBadge: { label: string; chip: string } | null = isReassessmentRunning
+    ? { label: "Обновляется", chip: "bg-slate-100 text-slate-700" }
+    : disagreeSubmitted
+      ? { label: "На пересмотре", chip: "bg-amber-100 text-amber-900" }
+      : reassessmentCompleted || effectiveStatus === "updated"
+        ? { label: "Обновлена", chip: "bg-sky-100 text-sky-900" }
+        : effectiveStatus === "review"
+          ? { label: "На пересмотре", chip: "bg-amber-100 text-amber-900" }
+          : effectiveStatus === "confirmed"
+            ? { label: "Подтверждена", chip: "bg-emerald-100 text-emerald-800" }
+            : effectiveStatus === "disagreed"
+              ? { label: "Не согласовано", chip: "bg-orange-100 text-orange-900" }
+              : null;
   const baseSourceLabel =
     assessment.source === "auto" ? "Автоматический мониторинг" : "Запущено пользователем";
   const sourceLabel = reassessmentCompleted ? "Запущено пользователем · только что" : baseSourceLabel;
@@ -272,10 +289,15 @@ export function AssessmentModal({
               </button>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${meta.chip}`}>
-                {meta.label}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${resolutionBadge.chip}`}>
+                {resolutionBadge.label}
               </span>
+              {statusBadge && (
+                <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-medium ${statusBadge.chip}`}>
+                  {statusBadge.label}
+                </span>
+              )}
             </div>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
               Оценка контрагента
