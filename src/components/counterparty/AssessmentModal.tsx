@@ -364,6 +364,8 @@ export function AssessmentModal({
                 <div className="space-y-3 lg:sticky lg:top-0">
                   {positive ? <TrustFactorsWidget /> : <KeyAnomaliesWidget />}
 
+                  <AssessmentHistoryEntry positive={positive} onOpen={() => setHistoryOpen(true)} />
+
                   {(isReassessmentRunning || reassessmentCompleted) && (
                     <div className="rounded-2xl border border-border bg-white p-4">
                       <div className="flex items-center gap-2">
