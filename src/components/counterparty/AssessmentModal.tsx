@@ -436,8 +436,8 @@ export function AssessmentModal({
               {/* Groups — left, row 2 */}
               <section className="order-3 lg:col-start-1 lg:row-start-1 space-y-5">
                 <div className="grid grid-cols-2 gap-3">
-                  <LimitCard label="Расходные сделки" sublabel="Лимит аванса" value="2,5 млн ₽" />
-                  <LimitCard label="Доходные сделки" sublabel="Лимит дебиторской задолженности" value="4,8 млн ₽" />
+                  <LimitCard label="Расходные сделки" sublabel="имеет аванс" value="12,4 млн ₽" />
+                  <LimitCard label="Доходные сделки" sublabel="имеет дебиторскую задолженность" value="18,7 млн ₽" />
                 </div>
                 <div>
                 <h3 className="mb-2 text-sm font-semibold">Группы оценки</h3>
@@ -607,11 +607,11 @@ export function AssessmentModal({
 function LimitCard({ label, sublabel, value }: { label: string; sublabel: string; value: string }) {
   return (
     <div className="rounded-xl border border-border bg-white px-4 py-3">
-      <div className="flex items-baseline gap-2">
-        <div className="text-xl font-semibold text-foreground">{value}</div>
-        <div className="text-xs text-muted-foreground leading-tight">{sublabel}</div>
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="mt-1 flex items-baseline gap-2">
+        <span className="text-lg font-semibold text-foreground">{value}</span>
+        <span className="text-xs text-muted-foreground leading-tight">{sublabel}</span>
       </div>
-      <div className="mt-1 text-sm font-medium text-foreground">{label}</div>
     </div>
   );
 }
