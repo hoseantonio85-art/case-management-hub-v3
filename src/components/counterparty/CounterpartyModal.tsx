@@ -129,6 +129,7 @@ export function CounterpartyModal({
   const confirmed = useMemo(() => risks.filter((r) => r.status === "confirmed"), [risks]);
   const dismissed = useMemo(() => risks.filter((r) => r.status === "dismissed"), [risks]);
   const decidedCount = confirmed.length + dismissed.length + verification.length;
+  const isNoRiskCounterparty = counterparty?.tag === "Нет риска";
   const totalOverdue = contracts.reduce((acc, c) => {
     return acc + toFiniteNumber(c?.overdue);
   }, 0);
@@ -574,7 +575,7 @@ export function CounterpartyModal({
             )}
 
             {/* Section: Decisions */}
-            {decidedCount > 0 && (
+            {!isNoRiskCounterparty && decidedCount > 0 && (
               <section>
                 <SectionTitle title="Принятые решения" count={decidedCount} />
                 <div className="space-y-2.5">
