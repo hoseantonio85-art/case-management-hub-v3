@@ -318,6 +318,19 @@ export default function Index() {
     if (!o) {
       setManualDisagreement(null);
       if (manualFlowTarget) {
+        const inn = manualFlowTarget.inn;
+        if (manualFlowIsNew) {
+          setAddedCounterparties((prev) =>
+            prev.some((c) => c.inn === inn) ? prev : [manualFlowTarget, ...prev],
+          );
+          toast.success("Контрагент добавлен в список", {
+            description: `Оценка сохранена по ИНН ${inn}`,
+          });
+        } else {
+          toast("Контрагент уже есть в списке", {
+            description: `ИНН ${inn} найден в рабочем списке`,
+          });
+        }
         setManualFlowCpOpen(true);
       }
     }
@@ -325,24 +338,20 @@ export default function Index() {
 
   const handleManualFlowCpOpenChange = (o: boolean) => {
     setManualFlowCpOpen(o);
-    if (!o && manualFlowTarget) {
-      const inn = manualFlowTarget.inn;
-      if (manualFlowIsNew) {
-        setAddedCounterparties((prev) =>
-          prev.some((c) => c.inn === inn) ? prev : [manualFlowTarget, ...prev],
-        );
-        toast.success("Контрагент добавлен в список", {
-          description: `Оценка сохранена по ИНН ${inn}`,
-        });
-      } else {
-        toast("Контрагент уже есть в списке", {
-          description: `ИНН ${inn} найден в рабочем списке`,
-        });
-      }
+    if (!o) {
       setManualFlowTarget(null);
       setManualFlowIsNew(false);
       setManualAssessment(null);
     }
+  };
+
+  const handleManualFlowCloseAll = () => {
+    setManualAssessmentOpen(false);
+    setManualFlowCpOpen(false);
+    setManualDisagreement(null);
+    setManualFlowTarget(null);
+    setManualFlowIsNew(false);
+    setManualAssessment(null);
   };
 
   const processCounts = useMemo(() => {
