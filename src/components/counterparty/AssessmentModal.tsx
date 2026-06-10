@@ -87,6 +87,7 @@ export function AssessmentModal({
   onDisagree,
   onBack,
   onCloseFlow,
+  positive = false,
 }: {
   assessment: Assessment | null;
   open: boolean;
@@ -100,6 +101,7 @@ export function AssessmentModal({
   onDisagree: (d: Disagreement) => void;
   onBack?: () => void;
   onCloseFlow?: () => void;
+  positive?: boolean;
 }) {
   const [notice, setNotice] = useState<{ tone: "success" | "info"; text: string } | null>(null);
   const [groupDrawer, setGroupDrawer] = useState<AssessmentGroup | null>(null);
