@@ -310,13 +310,39 @@ export default function Index() {
       setRunDialogOpen(false);
       setManualAssessmentOpen(true);
       setRunInn("");
+      toast.success("Оценка создана", {
+        description: `ИНН ${innRaw}`,
+      });
     }, 1500);
   };
 
+  // ESC/overlay close on AssessmentModal in manual flow → behave like Back:
+  // close assessment, open CounterpartyModal of the just-evaluated counterparty.
+  // No snackbar at this point — snackbar fires only when the whole flow closes.
   const handleManualAssessmentOpenChange = (o: boolean) => {
     setManualAssessmentOpen(o);
     if (!o) {
       setManualDisagreement(null);
+      if (manualFlowTarget) {
+        setManualFlowCpOpen(true);
+      }
+    }
+  };
+
+  // Back arrow: assessment → counterparty modal.
+  const handleManualAssessmentBack = () => {
+    setManualAssessmentOpen(false);
+    setManualDisagreement(null);
+    if (manualFlowTarget) {
+      setManualFlowCpOpen(true);
+    }
+  };
+
+  // Closing CounterpartyModal after manual assessment flow → finalize:
+  // add to list (if new), show snackbar, clear state.
+  const handleManualFlowCpOpenChange = (o: boolean) => {
+    setManualFlowCpOpen(o);
+    if (!o) {
       if (manualFlowTarget) {
         const inn = manualFlowTarget.inn;
         if (manualFlowIsNew) {
@@ -331,20 +357,14 @@ export default function Index() {
             description: `ИНН ${inn} найден в рабочем списке`,
           });
         }
-        setManualFlowCpOpen(true);
       }
-    }
-  };
-
-  const handleManualFlowCpOpenChange = (o: boolean) => {
-    setManualFlowCpOpen(o);
-    if (!o) {
       setManualFlowTarget(null);
       setManualFlowIsNew(false);
       setManualAssessment(null);
     }
   };
 
+  // X in AssessmentModal: full close, no snackbar, no list add.
   const handleManualFlowCloseAll = () => {
     setManualAssessmentOpen(false);
     setManualFlowCpOpen(false);
@@ -891,6 +911,7 @@ export default function Index() {
         assessment={manualAssessment}
         open={manualAssessmentOpen}
         onOpenChange={handleManualAssessmentOpenChange}
+        onBack={handleManualAssessmentBack}
         onCloseFlow={handleManualFlowCloseAll}
         status={manualStatus}
         disagreement={manualDisagreement}
