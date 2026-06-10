@@ -3,13 +3,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { largeModalContentClass } from "@/lib/modal-styles";
 import {
-  ShieldCheck,
   ChevronRight,
   ChevronDown,
-  Pencil,
-  XCircle,
-  Clock,
-  Calendar,
   X,
   CheckCircle2,
   Info as InfoIcon,
@@ -125,11 +120,7 @@ export function CounterpartyModal({
     return () => clearTimeout(t);
   }, [stepAnim]);
 
-  const verification = useMemo(() => risks.filter((r) => r.status === "verification"), [risks]);
   const confirmed = useMemo(() => risks.filter((r) => r.status === "confirmed"), [risks]);
-  const dismissed = useMemo(() => risks.filter((r) => r.status === "dismissed"), [risks]);
-  const decidedCount = confirmed.length + dismissed.length + verification.length;
-  const isNoRiskCounterparty = counterparty?.tag === "Нет риска";
   const totalOverdue = contracts.reduce((acc, c) => {
     return acc + toFiniteNumber(c?.overdue);
   }, 0);
@@ -166,11 +157,6 @@ export function CounterpartyModal({
 
   if (!counterparty) return null;
 
-  const openDrawer = (r: RiskSignal, decision: DecisionKind) => {
-    setEditing(r);
-    setInitialDecision(decision);
-    setDrawerOpen(true);
-  };
 
   const moveCurrentStep = (delta: 1 | -1) => {
     setSteps((prev) => {
@@ -574,84 +560,6 @@ export function CounterpartyModal({
               </div>
             )}
 
-            {/* Section: Decisions */}
-            {!isNoRiskCounterparty && decidedCount > 0 && (
-              <section>
-                <SectionTitle title="Принятые решения" count={decidedCount} />
-                <div className="space-y-2.5">
-                  {confirmed.map((r) => (
-                    <div key={r.id} className="rounded-xl border border-border bg-white p-4">
-                      <DecisionHeader
-                        icon={<ShieldCheck className="h-4 w-4" />}
-                        iconCls="bg-primary/10 text-primary"
-                        title={r.type}
-                        statusLabel="Подтверждено"
-                        statusCls="bg-primary/10 text-primary"
-                        date={r.decision?.date}
-                        responsible={r.decision?.responsible}
-                        onEdit={() => openDrawer(r, "confirm")}
-                      />
-                      {r.decision?.measures && r.decision.measures.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1.5">
-                          {r.decision.measures.map((m) => (
-                            <span
-                              key={m}
-                              className="rounded-full border border-border bg-white px-2.5 py-0.5 text-[11px]"
-                            >
-                              {m}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      {r.decision?.comment && (
-                        <div className="mt-2 text-xs text-muted-foreground">«{r.decision.comment}»</div>
-                      )}
-                    </div>
-                  ))}
-                  {verification.map((r) => (
-                    <div key={r.id} className="rounded-xl border border-border bg-white p-4">
-                      <DecisionHeader
-                        icon={<Clock className="h-4 w-4" />}
-                        iconCls="bg-slate-200 text-slate-700"
-                        title={r.type}
-                        statusLabel="На дополнительной проверке"
-                        statusCls="bg-slate-200 text-slate-800"
-                        date={r.verification?.date}
-                        responsible={r.verification?.responsible}
-                        onEdit={() => openDrawer(r, "verify")}
-                      />
-                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
-                        <span className="inline-flex items-center gap-1">
-                          <Calendar className="h-3 w-3" /> Плановая проверка:{" "}
-                          <b className="text-foreground">{r.verification?.plannedDate}</b>
-                        </span>
-                      </div>
-                      {r.verification?.comment && (
-                        <div className="mt-2 text-xs text-muted-foreground">«{r.verification.comment}»</div>
-                      )}
-                    </div>
-                  ))}
-                  {dismissed.map((r) => (
-                    <div key={r.id} className="rounded-xl border border-border bg-slate-50/60 p-4">
-                      <DecisionHeader
-                        icon={<XCircle className="h-4 w-4" />}
-                        iconCls="bg-muted text-muted-foreground"
-                        title={r.type}
-                        statusLabel="Риск снят"
-                        statusCls="bg-muted text-muted-foreground"
-                        date={r.dismissal?.date}
-                        responsible={r.dismissal?.responsible}
-                        onEdit={() => openDrawer(r, "dismiss")}
-                        muted
-                      />
-                      {r.dismissal?.comment && (
-                        <div className="mt-2 text-xs text-muted-foreground">«{r.dismissal.comment}»</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
 
             {/* Section: Contracts */}
             <section>
@@ -859,50 +767,6 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
-function DecisionHeader({
-  icon,
-  iconCls,
-  title,
-  statusLabel,
-  statusCls,
-  date,
-  responsible,
-  onEdit,
-  muted,
-}: {
-  icon: React.ReactNode;
-  iconCls: string;
-  title: string;
-  statusLabel: string;
-  statusCls: string;
-  date?: string;
-  responsible?: string;
-  onEdit?: () => void;
-  muted?: boolean;
-}) {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <div className="flex min-w-0 items-start gap-3">
-        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconCls}`}>
-          {icon}
-        </div>
-        <div className="min-w-0">
-          <div className={`font-medium ${muted ? "text-muted-foreground" : ""}`}>{title}</div>
-          <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-            <span className={`rounded-full px-2 py-0.5 font-medium ${statusCls}`}>{statusLabel}</span>
-            {date && <span>{date}</span>}
-            {responsible && <span>· {responsible}</span>}
-          </div>
-        </div>
-      </div>
-      {onEdit && (
-        <button onClick={onEdit} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted">
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
-      )}
-    </div>
-  );
-}
 
 function Cell({
   label,
