@@ -400,11 +400,6 @@ export default function Index() {
     return byProcess.filter((c) => selectedTiles.has(c.status));
   }, [byProcess, selectedTiles]);
 
-  const showRiskChips = !(
-    selectedTiles.size === 1 &&
-    (selectedTiles.has("no_risk") || selectedTiles.has("overdue"))
-  );
-
   const riskCounts = useMemo(() => {
     const map: Record<string, number> = { all: byCategory.length };
     for (const chip of problemChips) {
@@ -413,12 +408,20 @@ export default function Index() {
     return map;
   }, [byCategory]);
 
+  // Auto-clear the active problem filter if it becomes unavailable
+  // after a debt-category selection change.
+  useEffect(() => {
+    if (riskFilter !== "all" && (riskCounts[riskFilter] ?? 0) === 0) {
+      setRiskFilter("all");
+    }
+  }, [riskCounts, riskFilter]);
+
   const filtered = useMemo(() => {
-    if (!showRiskChips || riskFilter === "all") return byCategory;
+    if (riskFilter === "all") return byCategory;
     const chip = problemChips.find((c) => c.key === riskFilter);
     if (!chip) return byCategory;
     return byCategory.filter(chip.matches);
-  }, [byCategory, riskFilter, showRiskChips]);
+  }, [byCategory, riskFilter]);
 
   // Donut data:
   //  - 0 selected   → overview (top categories)
