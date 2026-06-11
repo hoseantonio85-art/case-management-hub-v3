@@ -822,6 +822,7 @@ export default function Index() {
         counterparty={active}
         open={!!active}
         onOpenChange={(o) => !o && setActive(null)}
+        onStatusChange={handleStatusChange}
       />
 
       {/* Run assessment by INN dialog */}
