@@ -235,7 +235,14 @@ export function DownloadHistoryDrawer({
         </div>
         {onDownloadAll ? (
           <div className="sticky bottom-0 border-t border-slate-200 bg-white p-4">
-            <Button className="w-full gap-2" onClick={onDownloadAll}>
+            <Button
+              className={cn(
+                "w-full gap-2",
+                records.length === 0 && "opacity-50 cursor-not-allowed"
+              )}
+              disabled={records.length === 0}
+              onClick={onDownloadAll}
+            >
               <Download className="h-4 w-4" /> Скачать весь отчёт
             </Button>
           </div>
