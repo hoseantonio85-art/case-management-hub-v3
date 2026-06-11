@@ -468,21 +468,3 @@ function CountPill({ kind, count }: { kind: AssessmentCountKind; count: number }
   );
 }
 
-
-const changeIcon: Record<"rose" | "amber" | "slate" | "emerald", typeof Flame> = {
-  rose: Flame,
-  amber: Zap,
-  slate: RefreshCw,
-  emerald: CheckCircle2,
-};
-
-const changeIconClass: Record<
-  "rose" | "amber" | "slate" | "emerald",
-  { bg: string; text: string }
-> = {
-  rose: { bg: "bg-rose-50", text: "text-rose-600" },
-  amber: { bg: "bg-amber-50", text: "text-amber-600" },
-  slate: { bg: "bg-slate-100", text: "text-slate-600" },
-  emerald: { bg: "bg-emerald-50", text: "text-emerald-600" },
-};
-
