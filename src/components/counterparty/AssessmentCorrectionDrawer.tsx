@@ -6,7 +6,9 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { InModalDrawer } from "./InModalDrawer";
 import { getToneForTag, toneStyles } from "./header-theme";
-import type { RiskStatus } from "@/lib/mock-data";
+import type { Counterparty } from "@/lib/mock-data";
+
+export type CounterpartyStatus = Counterparty["status"];
 
 export const CORRECTION_TAGS = [
   "Нет риска",
@@ -17,7 +19,7 @@ export const CORRECTION_TAGS = [
 
 export type CorrectionTag = (typeof CORRECTION_TAGS)[number];
 
-export const correctionTagToStatus: Record<CorrectionTag, RiskStatus> = {
+export const correctionTagToStatus: Record<CorrectionTag, CounterpartyStatus> = {
   "Нет риска": "no_risk",
   "Риск дефолта": "risk",
   "Просрочено": "overdue",
