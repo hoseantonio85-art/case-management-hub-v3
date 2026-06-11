@@ -926,12 +926,14 @@ export default function Index() {
           setManualDisagreement(d);
           setManualStatus("disagreed");
         }}
+        onStatusChange={(s) => manualFlowTarget && handleStatusChange(manualFlowTarget.inn, s)}
       />
 
       <CounterpartyModal
         counterparty={manualFlowTarget}
         open={manualFlowCpOpen}
         onOpenChange={handleManualFlowCpOpenChange}
+        onStatusChange={handleStatusChange}
       />
 
       <ProcessFilterDrawer
