@@ -445,6 +445,12 @@ export function AssessmentModal({
             onOpenChange={setHistoryOpen}
             positive={effectivePositive}
           />
+
+          <AssessmentCorrectionDrawer
+            open={correctionOpen}
+            onOpenChange={setCorrectionOpen}
+            onSubmit={handleCorrectionSubmit}
+          />
         </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
