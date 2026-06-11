@@ -6,7 +6,7 @@ import { NormAssistantIcon } from "./NormAssistantIcon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { largeModalContentClass } from "@/lib/modal-styles";
-import { AssessmentCorrectionDrawer, type CorrectionPayload, type CorrectionTag } from "./AssessmentCorrectionDrawer";
+import { AssessmentCorrectionDrawer, type CorrectionPayload, type CorrectionTag, type CounterpartyStatus, correctionTagToStatus } from "./AssessmentCorrectionDrawer";
 import { getToneForTag, toneStyles } from "./header-theme";
 import {
   type Assessment,
