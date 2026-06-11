@@ -413,6 +413,7 @@ export function AssessmentModal({
             onOpenChange={setDownloadHistoryOpen}
             records={downloadHistory}
             onRedownload={handleDownload}
+            onDownloadAll={handleDownload}
           />
 
           <AssessmentCorrectionDrawer
