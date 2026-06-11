@@ -111,12 +111,9 @@ export function AssessmentModal({
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  // Disagreement (review) inline flow — checkboxes appear directly on group cards.
-  const [disagreeMode, setDisagreeMode] = useState(false);
-  const [disagreeGroupIds, setDisagreeGroupIds] = useState<string[]>([]);
-  const [disagreeComments, setDisagreeComments] = useState<Record<string, string>>({});
-  const [disagreeErrors, setDisagreeErrors] = useState<Record<string, boolean>>({});
-  const [disagreeSubmitted, setDisagreeSubmitted] = useState(false);
+  // Correction drawer (replaces old inline disagreement flow).
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [correctedTag, setCorrectedTag] = useState<CorrectionTag | null>(null);
 
   // In-modal reassessment (separate from main-screen flow that asks INN).
   const [isReassessmentRunning, setIsReassessmentRunning] = useState(false);
@@ -140,11 +137,8 @@ export function AssessmentModal({
       setHighlightedChanges(false);
       setExtraChanges([]);
       setProgressStep(0);
-      setDisagreeMode(false);
-      setDisagreeGroupIds([]);
-      setDisagreeComments({});
-      setDisagreeErrors({});
-      setDisagreeSubmitted(false);
+      setCorrectionOpen(false);
+      setCorrectedTag(null);
     }
   }, [open, assessment?.inn]);
 
@@ -172,64 +166,31 @@ export function AssessmentModal({
     ];
   };
 
-  const handleDisagreeClick = () => {
-    setDisagreeMode(true);
-  };
-
-  const toggleDisagreeGroup = (id: string) => {
-    setDisagreeGroupIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-    setDisagreeErrors((prev) => {
-      if (!prev[id]) return prev;
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-  };
-
-  const setGroupComment = (id: string, value: string) => {
-    setDisagreeComments((prev) => ({ ...prev, [id]: value }));
-    if (value.trim()) {
-      setDisagreeErrors((prev) => {
-        if (!prev[id]) return prev;
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-    }
-  };
-
-  const handleSubmitDisagree = () => {
-    if (disagreeGroupIds.length === 0) return;
-    const errors: Record<string, boolean> = {};
-    for (const id of disagreeGroupIds) {
-      if (!(disagreeComments[id] ?? "").trim()) errors[id] = true;
-    }
-    if (Object.keys(errors).length > 0) {
-      setDisagreeErrors(errors);
-      return;
-    }
-    const groupTitleById = new Map<string, string>((assessment?.groups ?? []).map((g) => [g.id as string, g.title]));
-    const groupComments: DisagreementGroup[] = disagreeGroupIds.map((id) => ({
-      groupId: id,
-      groupTitle: groupTitleById.get(id) ?? id,
-      comment: (disagreeComments[id] ?? "").trim(),
-    }));
+  const handleCorrectionSubmit = (payload: CorrectionPayload) => {
+    setCorrectedTag(payload.tag);
     onDisagree({
-      text: groupComments.map((g) => `${g.groupTitle}: ${g.comment}`).join("\n"),
-      groups: disagreeGroupIds,
+      text: payload.comment,
       status: "submitted",
-      groupComments,
       submittedAt: new Date().toISOString(),
     });
-    setDisagreeSubmitted(true);
-    setDisagreeMode(false);
-    toast("Замечания отправлены на пересмотр");
+    toast("Корректировка оценки отправлена");
   };
 
-
   if (!assessment) return null;
+
+  const effectivePositive = correctedTag ? correctedTag === "Нет риска" : positive;
+  const headerTone = correctedTag ? getToneForTag(correctedTag) : null;
+  const headerBg = headerTone
+    ? toneStyles[headerTone].gradient
+    : effectivePositive
+      ? "bg-gradient-to-b from-emerald-50 via-emerald-50/40 to-transparent"
+      : statusMeta[status].headerBg;
+  const meta = { label: "", chip: "", headerBg };
+  const resolutionBadge = correctedTag
+    ? { label: correctedTag, chip: toneStyles[getToneForTag(correctedTag)].badge }
+    : effectivePositive
+      ? { label: "Сделки заключать можно", chip: "bg-emerald-100 text-emerald-900" }
+      : { label: "Не заключать сделки", chip: "bg-rose-100 text-rose-900" };
 
   const effectiveStatus: AssessmentStatus = disagreeSubmitted
     ? "review"
