@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, ArrowLeft, CheckCircle2, ChevronRight, Info, RefreshCw, Loader2, Flame, Zap, Send } from "lucide-react";
+import { X, ArrowLeft, CheckCircle2, ChevronRight, Info, RefreshCw, Loader2, Flame, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { NormAssistantIcon } from "./NormAssistantIcon";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { largeModalContentClass } from "@/lib/modal-styles";
+import { AssessmentCorrectionDrawer, type CorrectionPayload, type CorrectionTag } from "./AssessmentCorrectionDrawer";
+import { getToneForTag, toneStyles } from "./header-theme";
 import {
   type Assessment,
   type AssessmentGroup,
