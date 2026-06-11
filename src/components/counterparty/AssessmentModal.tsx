@@ -315,17 +315,19 @@ export function AssessmentModal({
                 <div className="space-y-3 lg:sticky lg:top-0">
                   {effectivePositive ? <TrustFactorsWidget /> : <KeyAnomaliesWidget />}
 
+                  <DownloadHistoryEntry
+                    count={downloadHistory.length}
+                    lastDate={downloadHistory[0]?.dateTime ?? null}
+                    onOpen={() => setDownloadHistoryOpen(true)}
+                  />
+
                   <CorrectionHistoryEntry
                     count={correctionHistory.length}
                     lastDate={correctionHistory[0]?.dateTime ?? ""}
                     onOpen={() => setCorrectionHistoryOpen(true)}
                   />
 
-                  <DownloadHistoryEntry
-                    count={downloadHistory.length}
-                    lastDate={downloadHistory[0]?.dateTime ?? null}
-                    onOpen={() => setDownloadHistoryOpen(true)}
-                  />
+
 
                 </div>
               </aside>
