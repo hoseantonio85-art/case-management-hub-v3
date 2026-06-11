@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, ArrowLeft, CheckCircle2, ChevronRight, Info, RefreshCw, Loader2, Flame, Zap } from "lucide-react";
+import { X, ArrowLeft, ChevronRight, Download } from "lucide-react";
 import { toast } from "sonner";
 import { NormAssistantIcon } from "./NormAssistantIcon";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,14 @@ import { defaultOgrn } from "./RegistrationInfoWidget";
 import { RegistrationInfoDrawer } from "./RegistrationInfoDrawer";
 import { KeyAnomaliesWidget } from "./KeyAnomaliesWidget";
 import { TrustFactorsWidget } from "./TrustFactorsWidget";
-import { AssessmentHistoryEntry, AssessmentHistoryDrawer } from "./AssessmentHistoryDrawer";
+import {
+  CorrectionHistoryEntry,
+  CorrectionHistoryDrawer,
+  DownloadHistoryEntry,
+  DownloadHistoryDrawer,
+  type CorrectionRecord,
+  type DownloadRecord,
+} from "./AssessmentHistoryDrawer";
 
 export type AssessmentStatus = "pending" | "confirmed" | "disagreed" | "updated" | "review";
 
