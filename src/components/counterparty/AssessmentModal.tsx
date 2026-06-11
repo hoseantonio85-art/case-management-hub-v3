@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, ArrowLeft, CheckCircle2, ChevronRight, Info, RefreshCw, Loader2, Flame, Zap } from "lucide-react";
+import { X, ArrowLeft, ChevronRight, Download } from "lucide-react";
 import { toast } from "sonner";
 import { NormAssistantIcon } from "./NormAssistantIcon";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,14 @@ import { defaultOgrn } from "./RegistrationInfoWidget";
 import { RegistrationInfoDrawer } from "./RegistrationInfoDrawer";
 import { KeyAnomaliesWidget } from "./KeyAnomaliesWidget";
 import { TrustFactorsWidget } from "./TrustFactorsWidget";
-import { AssessmentHistoryEntry, AssessmentHistoryDrawer } from "./AssessmentHistoryDrawer";
+import {
+  CorrectionHistoryEntry,
+  CorrectionHistoryDrawer,
+  DownloadHistoryEntry,
+  DownloadHistoryDrawer,
+  type CorrectionRecord,
+  type DownloadRecord,
+} from "./AssessmentHistoryDrawer";
 
 export type AssessmentStatus = "pending" | "confirmed" | "disagreed" | "updated" | "review";
 
@@ -111,64 +118,59 @@ export function AssessmentModal({
   
   const [groupDrawer, setGroupDrawer] = useState<AssessmentGroup | null>(null);
   const [registrationOpen, setRegistrationOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
 
   // Correction drawer (replaces old inline disagreement flow).
   const [correctionOpen, setCorrectionOpen] = useState(false);
   const [correctedTag, setCorrectedTag] = useState<CorrectionTag | null>(null);
 
-  // In-modal reassessment (separate from main-screen flow that asks INN).
-  const [isReassessmentRunning, setIsReassessmentRunning] = useState(false);
-  const [reassessmentCompleted, setReassessmentCompleted] = useState(false);
-  const [highlightedChanges, setHighlightedChanges] = useState(false);
-  const [extraChanges, setExtraChanges] = useState<{ text: string; tone: "rose" | "amber" | "slate" | "emerald" }[]>([]);
-  const [progressStep, setProgressStep] = useState(0);
-  const reassessTimers = useRef<number[]>([]);
+  // History blocks
+  const [correctionHistoryOpen, setCorrectionHistoryOpen] = useState(false);
+  const [downloadHistoryOpen, setDownloadHistoryOpen] = useState(false);
+  const [correctionHistory, setCorrectionHistory] = useState<CorrectionRecord[]>([]);
+  const [downloadHistory, setDownloadHistory] = useState<DownloadRecord[]>([]);
 
-  useEffect(() => {
-    return () => {
-      reassessTimers.current.forEach((t) => window.clearTimeout(t));
-    };
-  }, []);
-
-  // Reset local rerun state when switching counterparty or closing.
+  // Reset when switching counterparty or closing.
   useEffect(() => {
     if (!open) {
-      setIsReassessmentRunning(false);
-      setReassessmentCompleted(false);
-      setHighlightedChanges(false);
-      setExtraChanges([]);
-      setProgressStep(0);
       setCorrectionOpen(false);
       setCorrectedTag(null);
+      setCorrectionHistoryOpen(false);
+      setDownloadHistoryOpen(false);
+      setCorrectionHistory([]);
+      setDownloadHistory([]);
     }
   }, [open, assessment?.inn]);
 
-  const handleRerunAssessment = () => {
-    if (isReassessmentRunning) return;
-    setIsReassessmentRunning(true);
-    setReassessmentCompleted(false);
-    setProgressStep(0);
-    reassessTimers.current.forEach((t) => window.clearTimeout(t));
-    reassessTimers.current = [
-      window.setTimeout(() => setProgressStep(1), 500),
-      window.setTimeout(() => setProgressStep(2), 1100),
-      window.setTimeout(() => {
-        setIsReassessmentRunning(false);
-        setReassessmentCompleted(true);
-        setHighlightedChanges(true);
-        setExtraChanges([
-          { text: "Обновлены ограничения ФНС по счетам", tone: "rose" },
-          { text: "Изменилась налоговая задолженность", tone: "amber" },
-          { text: "Добавлен новый судебный фактор", tone: "slate" },
-        ]);
-        toast.success("Оценка обновлена");
-      }, 1800),
-      window.setTimeout(() => setHighlightedChanges(false), 5400),
-    ];
+  const nowLabel = () => {
+    const d = new Date();
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `Сегодня, ${hh}:${mm}`;
   };
 
+  const formatMonitoringDate = (iso: string) => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleDateString("ru-RU");
+  };
+
+  const currentTagLabel = correctedTag ?? (positive ? "Нет риска" : "Риск дефолта");
+
   const handleCorrectionSubmit = (payload: CorrectionPayload) => {
+    const fromTag = currentTagLabel;
+    setCorrectionHistory((prev) => [
+      {
+        id: `c-${Date.now()}`,
+        dateTime: nowLabel(),
+        author: "Вы · риск-менеджер",
+        fromTag,
+        toTag: payload.tag,
+        comment: payload.comment,
+        monitoringDate: formatMonitoringDate(payload.monitoringDate),
+      },
+      ...prev,
+    ]);
     setCorrectedTag(payload.tag);
     onStatusChange?.(correctionTagToStatus[payload.tag]);
     onDisagree({
@@ -177,6 +179,19 @@ export function AssessmentModal({
       submittedAt: new Date().toISOString(),
     });
     toast("Корректировка оценки отправлена");
+  };
+
+  const handleDownload = () => {
+    setDownloadHistory((prev) => [
+      {
+        id: `d-${Date.now()}`,
+        dateTime: nowLabel(),
+        tag: currentTagLabel,
+        fileName: "Отчёт оценки контрагента.pdf",
+      },
+      ...prev,
+    ]);
+    toast.success("Отчёт скачан");
   };
 
   if (!assessment) return null;
@@ -197,7 +212,7 @@ export function AssessmentModal({
 
   const baseSourceLabel =
     assessment.source === "auto" ? "Автоматический мониторинг" : "Запущено пользователем";
-  const sourceLabel = reassessmentCompleted ? "Запущено пользователем · только что" : baseSourceLabel;
+  const sourceLabel = baseSourceLabel;
 
 
 
@@ -271,11 +286,6 @@ export function AssessmentModal({
                   <div className="mt-1 text-lg font-semibold text-slate-900">
                     Обоснование оценки
                   </div>
-                  {reassessmentCompleted && (
-                    <div className="mt-0.5 text-[11px] text-muted-foreground">
-                      Пересчитано по текущим данным · только что
-                    </div>
-                  )}
                   <p className="mt-2 text-sm leading-snug text-muted-foreground">
                     {effectivePositive
                       ? "Критически значимых факторов риска не выявлено. Финансовые, регистрационные и репутационные признаки не блокируют заключение сделки."
@@ -297,53 +307,17 @@ export function AssessmentModal({
                 <div className="space-y-3 lg:sticky lg:top-0">
                   {effectivePositive ? <TrustFactorsWidget /> : <KeyAnomaliesWidget />}
 
-                  <AssessmentHistoryEntry positive={effectivePositive} onOpen={() => setHistoryOpen(true)} />
+                  <CorrectionHistoryEntry
+                    count={correctionHistory.length}
+                    lastDate={correctionHistory[0]?.dateTime ?? ""}
+                    onOpen={() => setCorrectionHistoryOpen(true)}
+                  />
 
-                  {(isReassessmentRunning || reassessmentCompleted) && (
-                    <div className="rounded-2xl border border-border bg-white p-4">
-                      <div className="flex items-center gap-2">
-                        {isReassessmentRunning ? (
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        ) : (
-                          <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                        )}
-                        <div className="text-sm font-semibold text-foreground">
-                          {isReassessmentRunning ? "Оценка запущена" : "Оценка обновлена"}
-                        </div>
-                      </div>
-                      <p className="mt-1.5 text-[11px] leading-snug text-muted-foreground">
-                        {isReassessmentRunning
-                          ? `Проверяю данные по ИНН ${assessment.inn}: регистрационные сведения, налоговые маркеры и судебную нагрузку.`
-                          : "Появились новые изменения по 3 критериям. Проверьте ключевые аномалии."}
-                      </p>
-                      {isReassessmentRunning && (
-                        <ul className="mt-3 space-y-1.5">
-                          {[
-                            "Регистрационные данные",
-                            "Финансы и налоги",
-                            "Судебная нагрузка",
-                          ].map((label, idx) => {
-                            const done = progressStep > idx;
-                            const active = progressStep === idx;
-                            return (
-                              <li key={label} className="flex items-center gap-2 text-[11px]">
-                                {done ? (
-                                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                                ) : active ? (
-                                  <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                                ) : (
-                                  <span className="h-3.5 w-3.5 rounded-full border border-border" />
-                                )}
-                                <span className={cn(done ? "text-foreground" : "text-muted-foreground")}>
-                                  {label}
-                                </span>
-                              </li>
-                            );
-                          })}
-                        </ul>
-                      )}
-                    </div>
-                  )}
+                  <DownloadHistoryEntry
+                    count={downloadHistory.length}
+                    lastDate={downloadHistory[0]?.dateTime ?? null}
+                    onOpen={() => setDownloadHistoryOpen(true)}
+                  />
 
                 </div>
               </aside>
@@ -407,21 +381,10 @@ export function AssessmentModal({
                 Не согласен
               </Button>
               <Button
-                variant="outline"
-                onClick={handleRerunAssessment}
-                disabled={isReassessmentRunning}
+                onClick={handleDownload}
                 className="h-12 flex-1 rounded-full text-sm font-medium"
               >
-                {isReassessmentRunning ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Обновляю оценку
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="h-4 w-4" />
-                    {reassessmentCompleted ? "Запустить повторно" : "Запустить новую оценку"}
-                  </>
-                )}
+                <Download className="h-4 w-4" /> Скачать
               </Button>
             </div>
           </div>
@@ -443,10 +406,17 @@ export function AssessmentModal({
             ogrn={defaultOgrn}
           />
 
-          <AssessmentHistoryDrawer
-            open={historyOpen}
-            onOpenChange={setHistoryOpen}
-            positive={effectivePositive}
+          <CorrectionHistoryDrawer
+            open={correctionHistoryOpen}
+            onOpenChange={setCorrectionHistoryOpen}
+            records={correctionHistory}
+          />
+
+          <DownloadHistoryDrawer
+            open={downloadHistoryOpen}
+            onOpenChange={setDownloadHistoryOpen}
+            records={downloadHistory}
+            onRedownload={handleDownload}
           />
 
           <AssessmentCorrectionDrawer
@@ -497,22 +467,4 @@ function CountPill({ kind, count }: { kind: AssessmentCountKind; count: number }
     </span>
   );
 }
-
-
-const changeIcon: Record<"rose" | "amber" | "slate" | "emerald", typeof Flame> = {
-  rose: Flame,
-  amber: Zap,
-  slate: RefreshCw,
-  emerald: CheckCircle2,
-};
-
-const changeIconClass: Record<
-  "rose" | "amber" | "slate" | "emerald",
-  { bg: string; text: string }
-> = {
-  rose: { bg: "bg-rose-50", text: "text-rose-600" },
-  amber: { bg: "bg-amber-50", text: "text-amber-600" },
-  slate: { bg: "bg-slate-100", text: "text-slate-600" },
-  emerald: { bg: "bg-emerald-50", text: "text-emerald-600" },
-};
 
