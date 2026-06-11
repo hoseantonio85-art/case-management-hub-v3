@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, ArrowLeft, CheckCircle2, ChevronRight, Info, RefreshCw, Loader2, Flame, Zap, Send } from "lucide-react";
+import { X, ArrowLeft, CheckCircle2, ChevronRight, Info, RefreshCw, Loader2, Flame, Zap } from "lucide-react";
 import { toast } from "sonner";
 import { NormAssistantIcon } from "./NormAssistantIcon";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { largeModalContentClass } from "@/lib/modal-styles";
+import { AssessmentCorrectionDrawer, type CorrectionPayload, type CorrectionTag } from "./AssessmentCorrectionDrawer";
+import { getToneForTag, toneStyles } from "./header-theme";
 import {
   type Assessment,
   type AssessmentGroup,
@@ -111,12 +111,9 @@ export function AssessmentModal({
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
-  // Disagreement (review) inline flow — checkboxes appear directly on group cards.
-  const [disagreeMode, setDisagreeMode] = useState(false);
-  const [disagreeGroupIds, setDisagreeGroupIds] = useState<string[]>([]);
-  const [disagreeComments, setDisagreeComments] = useState<Record<string, string>>({});
-  const [disagreeErrors, setDisagreeErrors] = useState<Record<string, boolean>>({});
-  const [disagreeSubmitted, setDisagreeSubmitted] = useState(false);
+  // Correction drawer (replaces old inline disagreement flow).
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [correctedTag, setCorrectedTag] = useState<CorrectionTag | null>(null);
 
   // In-modal reassessment (separate from main-screen flow that asks INN).
   const [isReassessmentRunning, setIsReassessmentRunning] = useState(false);
@@ -140,11 +137,8 @@ export function AssessmentModal({
       setHighlightedChanges(false);
       setExtraChanges([]);
       setProgressStep(0);
-      setDisagreeMode(false);
-      setDisagreeGroupIds([]);
-      setDisagreeComments({});
-      setDisagreeErrors({});
-      setDisagreeSubmitted(false);
+      setCorrectionOpen(false);
+      setCorrectedTag(null);
     }
   }, [open, assessment?.inn]);
 
@@ -172,93 +166,32 @@ export function AssessmentModal({
     ];
   };
 
-  const handleDisagreeClick = () => {
-    setDisagreeMode(true);
-  };
-
-  const toggleDisagreeGroup = (id: string) => {
-    setDisagreeGroupIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-    setDisagreeErrors((prev) => {
-      if (!prev[id]) return prev;
-      const next = { ...prev };
-      delete next[id];
-      return next;
-    });
-  };
-
-  const setGroupComment = (id: string, value: string) => {
-    setDisagreeComments((prev) => ({ ...prev, [id]: value }));
-    if (value.trim()) {
-      setDisagreeErrors((prev) => {
-        if (!prev[id]) return prev;
-        const next = { ...prev };
-        delete next[id];
-        return next;
-      });
-    }
-  };
-
-  const handleSubmitDisagree = () => {
-    if (disagreeGroupIds.length === 0) return;
-    const errors: Record<string, boolean> = {};
-    for (const id of disagreeGroupIds) {
-      if (!(disagreeComments[id] ?? "").trim()) errors[id] = true;
-    }
-    if (Object.keys(errors).length > 0) {
-      setDisagreeErrors(errors);
-      return;
-    }
-    const groupTitleById = new Map<string, string>((assessment?.groups ?? []).map((g) => [g.id as string, g.title]));
-    const groupComments: DisagreementGroup[] = disagreeGroupIds.map((id) => ({
-      groupId: id,
-      groupTitle: groupTitleById.get(id) ?? id,
-      comment: (disagreeComments[id] ?? "").trim(),
-    }));
+  const handleCorrectionSubmit = (payload: CorrectionPayload) => {
+    setCorrectedTag(payload.tag);
     onDisagree({
-      text: groupComments.map((g) => `${g.groupTitle}: ${g.comment}`).join("\n"),
-      groups: disagreeGroupIds,
+      text: payload.comment,
       status: "submitted",
-      groupComments,
       submittedAt: new Date().toISOString(),
     });
-    setDisagreeSubmitted(true);
-    setDisagreeMode(false);
-    toast("Замечания отправлены на пересмотр");
+    toast("Корректировка оценки отправлена");
   };
-
 
   if (!assessment) return null;
 
-  const effectiveStatus: AssessmentStatus = disagreeSubmitted
-    ? "review"
-    : reassessmentCompleted
-      ? "updated"
-      : status;
-  const meta = positive
-    ? {
-        label: "Сделки заключать можно",
-        chip: "bg-emerald-100 text-emerald-900",
-        headerBg: "bg-gradient-to-b from-emerald-50 via-emerald-50/40 to-transparent",
-      }
-    : statusMeta[effectiveStatus];
-  const resolutionBadge = positive
-    ? { label: "Сделки заключать можно", chip: "bg-emerald-100 text-emerald-900" }
-    : { label: "Не заключать сделки", chip: "bg-rose-100 text-rose-900" };
-  const statusBadge: { label: string; chip: string } | null = isReassessmentRunning
-    ? { label: "Обновляется", chip: "bg-slate-100 text-slate-700" }
-    : disagreeSubmitted
-      ? { label: "На пересмотре", chip: "bg-amber-100 text-amber-900" }
-      : reassessmentCompleted || effectiveStatus === "updated"
-        ? { label: "Обновлена", chip: "bg-sky-100 text-sky-900" }
-        : effectiveStatus === "review"
-          ? { label: "На пересмотре", chip: "bg-amber-100 text-amber-900" }
-          : effectiveStatus === "confirmed"
-            ? { label: "Подтверждена", chip: "bg-emerald-100 text-emerald-800" }
-            : effectiveStatus === "disagreed"
-              ? { label: "Не согласовано", chip: "bg-orange-100 text-orange-900" }
-              : null;
+  const effectivePositive = correctedTag ? correctedTag === "Нет риска" : positive;
+  const headerTone = correctedTag ? getToneForTag(correctedTag) : null;
+  const headerBg = headerTone
+    ? toneStyles[headerTone].gradient
+    : effectivePositive
+      ? "bg-gradient-to-b from-emerald-50 via-emerald-50/40 to-transparent"
+      : statusMeta[status].headerBg;
+  const meta = { label: "", chip: "", headerBg };
+  const resolutionBadge = correctedTag
+    ? { label: correctedTag, chip: toneStyles[getToneForTag(correctedTag)].badge }
+    : effectivePositive
+      ? { label: "Сделки заключать можно", chip: "bg-emerald-100 text-emerald-900" }
+      : { label: "Не заключать сделки", chip: "bg-rose-100 text-rose-900" };
+
   const baseSourceLabel =
     assessment.source === "auto" ? "Автоматический мониторинг" : "Запущено пользователем";
   const sourceLabel = reassessmentCompleted ? "Запущено пользователем · только что" : baseSourceLabel;
@@ -320,17 +253,17 @@ export function AssessmentModal({
             </div>
             <div className={cn(
               "mt-5 rounded-3xl p-[1.5px]",
-              positive
+              effectivePositive
                 ? "bg-gradient-to-r from-emerald-200 via-emerald-100 to-teal-100"
                 : "bg-gradient-to-r from-rose-200 via-red-100 to-orange-100",
             )}>
               <div className={cn(
                 "flex items-start gap-4 rounded-[22px] px-6 py-5",
-                positive
+                effectivePositive
                   ? "bg-gradient-to-br from-emerald-50/60 via-white to-white"
                   : "bg-gradient-to-br from-rose-50/60 via-white to-white",
               )}>
-                <NormAssistantIcon size="lg" tone={positive ? "emerald" : "rose"} />
+                <NormAssistantIcon size="lg" tone={effectivePositive ? "emerald" : "rose"} />
                 <div className="min-w-0 flex-1">
                   <div className="mt-1 text-lg font-semibold text-slate-900">
                     Обоснование оценки
@@ -341,7 +274,7 @@ export function AssessmentModal({
                     </div>
                   )}
                   <p className="mt-2 text-sm leading-snug text-muted-foreground">
-                    {positive
+                    {effectivePositive
                       ? "Критически значимых факторов риска не выявлено. Финансовые, регистрационные и репутационные признаки не блокируют заключение сделки."
                       : "Компания имеет критически значимые риски: за последние 6 месяцев сменились собственники или директор, оперативное погашение краткосрочных обязательств невозможно, а также активы сформированы в основном за счёт привлечённых средств."}
                   </p>
@@ -359,9 +292,9 @@ export function AssessmentModal({
               <aside className="order-2 lg:col-start-2 lg:row-start-1">
 
                 <div className="space-y-3 lg:sticky lg:top-0">
-                  {positive ? <TrustFactorsWidget /> : <KeyAnomaliesWidget />}
+                  {effectivePositive ? <TrustFactorsWidget /> : <KeyAnomaliesWidget />}
 
-                  <AssessmentHistoryEntry positive={positive} onOpen={() => setHistoryOpen(true)} />
+                  <AssessmentHistoryEntry positive={effectivePositive} onOpen={() => setHistoryOpen(true)} />
 
                   {(isReassessmentRunning || reassessmentCompleted) && (
                     <div className="rounded-2xl border border-border bg-white p-4">
@@ -424,21 +357,10 @@ export function AssessmentModal({
                 <div className="grid grid-cols-1 gap-2.5">
                   {assessment.groups.map((g) => {
                     const counts = groupCounts(g);
-                    const checked = disagreeGroupIds.includes(g.id);
-                    const isUnderReview =
-                      disagreeSubmitted && !disagreeMode && disagreeGroupIds.includes(g.id);
-                    const submittedComment = disagreeComments[g.id]?.trim();
-                    const hasError = disagreeErrors[g.id];
                     return (
                       <div
                         key={g.id}
-                        className={cn(
-                          "rounded-lg border bg-white transition",
-                          disagreeMode && checked
-                            ? "border-primary/30 bg-primary/5"
-                            : "border-slate-100",
-                        )}
-
+                        className="rounded-lg border border-slate-100 bg-white transition"
                       >
                         <div
                           role="button"
@@ -452,27 +374,8 @@ export function AssessmentModal({
                           }}
                           className="group flex cursor-pointer items-center gap-3 px-3 py-3 text-left hover:bg-muted/30"
                         >
-                          {disagreeMode && (
-                            <div
-                              onClick={(e) => e.stopPropagation()}
-                              className="flex shrink-0 items-center"
-                            >
-                              <Checkbox
-                                checked={checked}
-                                onCheckedChange={() => toggleDisagreeGroup(g.id)}
-                                aria-label={`Выбрать группу ${g.title}`}
-                              />
-                            </div>
-                          )}
                           <div className="min-w-0 flex-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <div className="text-sm font-medium text-foreground">{g.title}</div>
-                              {isUnderReview && (
-                                <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700">
-                                  На пересмотре
-                                </span>
-                              )}
-                            </div>
+                            <div className="text-sm font-medium text-foreground">{g.title}</div>
                             <div className="mt-2 flex flex-wrap items-center gap-1.5">
                               <CountPill kind="risk" count={counts.risk} />
                               <CountPill kind="clear" count={counts.clear} />
@@ -481,41 +384,6 @@ export function AssessmentModal({
                           </div>
                           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-foreground" />
                         </div>
-
-                        {disagreeMode && checked && (
-                          <div
-                            className="border-t border-primary/20 px-3 py-3"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <label className="text-[11px] font-medium text-foreground">
-                              Комментарий к группе
-                            </label>
-                            <Textarea
-                              value={disagreeComments[g.id] ?? ""}
-                              onChange={(e) => setGroupComment(g.id, e.target.value)}
-                              onClick={(e) => e.stopPropagation()}
-                              onFocus={(e) => e.stopPropagation()}
-                              placeholder="Опишите, с чем именно вы не согласны по этой группе."
-                              className={cn(
-                                "mt-1.5 min-h-[88px] resize-y",
-                                hasError && "border-rose-400 focus-visible:ring-rose-300",
-                              )}
-                              rows={3}
-                            />
-                            {hasError && (
-                              <div className="mt-1 text-[11px] text-rose-600">
-                                Добавьте комментарий по выбранной группе.
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {!disagreeMode && isUnderReview && submittedComment && (
-                          <div className="border-t border-border px-3 py-2.5 text-[12px] text-muted-foreground">
-                            <span className="font-medium text-foreground">Комментарий:</span>{" "}
-                            {submittedComment}
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -528,23 +396,13 @@ export function AssessmentModal({
           {/* Footer actions */}
           <div className="shrink-0 border-t border-border bg-white px-5 py-4 lg:px-10">
             <div className="flex flex-col gap-3 sm:flex-row">
-              {disagreeMode ? (
-                <Button
-                  onClick={handleSubmitDisagree}
-                  disabled={disagreeGroupIds.length === 0}
-                  className="h-12 flex-1 rounded-full text-sm font-medium"
-                >
-                  <Send className="h-4 w-4" /> Отправить на пересмотр
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  onClick={handleDisagreeClick}
-                  className="h-12 flex-1 rounded-full text-sm font-medium"
-                >
-                  Не согласен
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                onClick={() => setCorrectionOpen(true)}
+                className="h-12 flex-1 rounded-full text-sm font-medium"
+              >
+                Не согласен
+              </Button>
               <Button
                 variant="outline"
                 onClick={handleRerunAssessment}
@@ -585,7 +443,13 @@ export function AssessmentModal({
           <AssessmentHistoryDrawer
             open={historyOpen}
             onOpenChange={setHistoryOpen}
-            positive={positive}
+            positive={effectivePositive}
+          />
+
+          <AssessmentCorrectionDrawer
+            open={correctionOpen}
+            onOpenChange={setCorrectionOpen}
+            onSubmit={handleCorrectionSubmit}
           />
         </div>
         </DialogPrimitive.Content>
