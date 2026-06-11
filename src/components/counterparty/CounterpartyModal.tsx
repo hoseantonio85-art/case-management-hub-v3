@@ -46,10 +46,12 @@ export function CounterpartyModal({
   counterparty,
   open,
   onOpenChange,
+  onStatusChange,
 }: {
   counterparty: Counterparty | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  onStatusChange?: (inn: string, status: Counterparty["status"]) => void;
 }) {
   const [risks, setRisks] = useState<RiskSignal[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
