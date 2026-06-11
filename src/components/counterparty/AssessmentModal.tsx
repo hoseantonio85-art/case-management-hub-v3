@@ -464,3 +464,99 @@ function CountPill({ kind, count }: { kind: AssessmentCountKind; count: number }
   );
 }
 
+
+function GroupCard({
+  group,
+  onOpen,
+  compact = false,
+}: {
+  group: AssessmentGroup;
+  onOpen: (g: AssessmentGroup) => void;
+  compact?: boolean;
+}) {
+  const counts = groupCounts(group);
+  return (
+    <div className="rounded-lg border border-slate-100 bg-white transition">
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => onOpen(group)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen(group);
+          }
+        }}
+        className={cn(
+          "group flex cursor-pointer items-center gap-3 px-3 text-left hover:bg-muted/30",
+          compact ? "py-2.5" : "py-3",
+        )}
+      >
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-medium text-foreground">{group.title}</div>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <CountPill kind="risk" count={counts.risk} />
+            <CountPill kind="clear" count={counts.clear} />
+            <CountPill kind="no_data" count={counts.no_data} />
+          </div>
+        </div>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-foreground" />
+      </div>
+    </div>
+  );
+}
+
+function pluralCriteria(n: number) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "критерий";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "критериев";
+  return "критериев";
+}
+
+function OtherGroupsAccordion({
+  groups,
+  onOpen,
+}: {
+  groups: AssessmentGroup[];
+  onOpen: (g: AssessmentGroup) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const totals = sumGroupCounts(groups);
+  const criteriaCount = groups.reduce((acc, g) => acc + g.criteria.length, 0);
+  return (
+    <div className="rounded-lg border border-slate-100 bg-white transition">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-full items-center gap-3 px-3 py-3 text-left hover:bg-muted/30"
+      >
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-medium text-foreground">Прочее</div>
+          <div className="mt-0.5 text-xs text-muted-foreground">
+            {groups.length} групп · {criteriaCount} {pluralCriteria(criteriaCount)}
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <CountPill kind="risk" count={totals.risk} />
+            <CountPill kind="clear" count={totals.clear} />
+            <CountPill kind="no_data" count={totals.no_data} />
+          </div>
+        </div>
+        <ChevronDown
+          className={cn(
+            "h-4 w-4 shrink-0 text-muted-foreground transition",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+      {open && (
+        <div className="border-t border-slate-100 bg-slate-50/40 p-2 space-y-2">
+          {groups.map((g) => (
+            <GroupCard key={g.id} group={g} onOpen={onOpen} compact />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
