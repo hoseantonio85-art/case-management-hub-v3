@@ -6,7 +6,7 @@ import { NormAssistantIcon } from "./NormAssistantIcon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { largeModalContentClass } from "@/lib/modal-styles";
-import { AssessmentCorrectionDrawer, type CorrectionPayload, type CorrectionTag } from "./AssessmentCorrectionDrawer";
+import { AssessmentCorrectionDrawer, type CorrectionPayload, type CorrectionTag, type CounterpartyStatus, correctionTagToStatus } from "./AssessmentCorrectionDrawer";
 import { getToneForTag, toneStyles } from "./header-theme";
 import {
   type Assessment,
@@ -91,6 +91,7 @@ export function AssessmentModal({
   onBack,
   onCloseFlow,
   positive = false,
+  onStatusChange,
 }: {
   assessment: Assessment | null;
   open: boolean;
@@ -105,6 +106,7 @@ export function AssessmentModal({
   onBack?: () => void;
   onCloseFlow?: () => void;
   positive?: boolean;
+  onStatusChange?: (status: CounterpartyStatus) => void;
 }) {
   
   const [groupDrawer, setGroupDrawer] = useState<AssessmentGroup | null>(null);
@@ -168,6 +170,7 @@ export function AssessmentModal({
 
   const handleCorrectionSubmit = (payload: CorrectionPayload) => {
     setCorrectedTag(payload.tag);
+    onStatusChange?.(correctionTagToStatus[payload.tag]);
     onDisagree({
       text: payload.comment,
       status: "submitted",
