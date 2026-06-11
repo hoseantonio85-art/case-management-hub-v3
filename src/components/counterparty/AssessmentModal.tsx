@@ -286,11 +286,6 @@ export function AssessmentModal({
                   <div className="mt-1 text-lg font-semibold text-slate-900">
                     Обоснование оценки
                   </div>
-                  {reassessmentCompleted && (
-                    <div className="mt-0.5 text-[11px] text-muted-foreground">
-                      Пересчитано по текущим данным · только что
-                    </div>
-                  )}
                   <p className="mt-2 text-sm leading-snug text-muted-foreground">
                     {effectivePositive
                       ? "Критически значимых факторов риска не выявлено. Финансовые, регистрационные и репутационные признаки не блокируют заключение сделки."
