@@ -396,23 +396,13 @@ export function AssessmentModal({
           {/* Footer actions */}
           <div className="shrink-0 border-t border-border bg-white px-5 py-4 lg:px-10">
             <div className="flex flex-col gap-3 sm:flex-row">
-              {disagreeMode ? (
-                <Button
-                  onClick={handleSubmitDisagree}
-                  disabled={disagreeGroupIds.length === 0}
-                  className="h-12 flex-1 rounded-full text-sm font-medium"
-                >
-                  <Send className="h-4 w-4" /> Отправить на пересмотр
-                </Button>
-              ) : (
-                <Button
-                  variant="outline"
-                  onClick={handleDisagreeClick}
-                  className="h-12 flex-1 rounded-full text-sm font-medium"
-                >
-                  Не согласен
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                onClick={() => setCorrectionOpen(true)}
+                className="h-12 flex-1 rounded-full text-sm font-medium"
+              >
+                Не согласен
+              </Button>
               <Button
                 variant="outline"
                 onClick={handleRerunAssessment}
