@@ -14,7 +14,25 @@ import {
   Info as InfoIcon,
   RefreshCcw,
   X,
+  ChevronRight,
+  Trash2,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const SETTLEMENT_STAGES = [
+  "Мониторинг",
+  "Досудебное урегулирование",
+  "Передача в ДРПА",
+  "Судебное взыскание",
+  "Сопровождение банкротства",
+  "Сопровождение ликвидации",
+] as const;
 import type { Contract, OverdueRecord } from "@/lib/mock-data";
 import { toneStyles } from "./header-theme";
 import { InModalDrawer } from "./InModalDrawer";
