@@ -45,6 +45,19 @@ const toFiniteNumber = (value: unknown) => {
   return Number.isFinite(numberValue) ? numberValue : 0;
 };
 
+const CONTRACT_STAGES = [
+  "Коммуникация с должником",
+  "Сверка взаиморасчетов",
+  "Достигнуты договоренности",
+  "Подготовка к обращению в суд",
+  "Ведется судебная работа",
+  "Получен судебный акт",
+  "Ведется исполнительное производство",
+  "Банкротство должника",
+  "Задолженность погашена",
+  "Создание резерва / списание",
+] as const;
+
 
 export function CounterpartyModal({
   counterparty,
