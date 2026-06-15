@@ -312,8 +312,13 @@ export function AssessmentModal({
                       <InfoRow label="ИНН" value={assessment.inn} />
                       <InfoRow label="ОГРН" value={defaultOgrn} />
                       <InfoRow
-                        label="Дата регистрации"
-                        value={defaultRegistrationInfo.registrationDate}
+                        label="Дата оценки"
+                        value={
+                          <div>
+                            <div className="text-sm leading-snug text-foreground">{assessment.date}</div>
+                            <div className="text-[11px] text-muted-foreground">обновлено сегодня</div>
+                          </div>
+                        }
                       />
                       <InfoRow label="Текущий статус ЕГРЮЛ" value="Действующая" />
                       {infoExpanded && (
