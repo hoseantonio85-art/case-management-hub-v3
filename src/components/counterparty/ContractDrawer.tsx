@@ -84,6 +84,7 @@ export function ContractDrawer({
   onOpenChange,
   onAddOverdue,
   onAdvanceStage,
+  onUpdateContract,
 }: {
   contract: Contract | null;
   counterpartyName?: string;
@@ -94,6 +95,7 @@ export function ContractDrawer({
   onOpenChange: (o: boolean) => void;
   onAddOverdue: (id: string, record: OverdueRecord) => void;
   onAdvanceStage: (id: string) => void;
+  onUpdateContract?: (id: string, patch: Partial<Contract>) => void;
 }) {
   const [stepIdx, setStepIdx] = useState(1);
   const [stepStartedAt, setStepStartedAt] = useState<string>(formatDDMMYYYY(TODAY));
