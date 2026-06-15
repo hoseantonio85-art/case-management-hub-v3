@@ -18,7 +18,7 @@ import {
 } from "@/lib/assessment-data";
 import { ChevronDown } from "lucide-react";
 import { AssessmentGroupDrawer } from "./AssessmentGroupDrawer";
-import { defaultOgrn } from "./RegistrationInfoWidget";
+import { defaultOgrn, defaultRegistrationInfo } from "./RegistrationInfoWidget";
 import { RegistrationInfoDrawer } from "./RegistrationInfoDrawer";
 import { KeyAnomaliesWidget } from "./KeyAnomaliesWidget";
 import { TrustFactorsWidget } from "./TrustFactorsWidget";
@@ -129,6 +129,7 @@ export function AssessmentModal({
 
   // History blocks (persist per-counterparty within the session)
   const [correctionHistoryOpen, setCorrectionHistoryOpen] = useState(false);
+  const [infoExpanded, setInfoExpanded] = useState(false);
   const [downloadHistoryOpen, setDownloadHistoryOpen] = useState(false);
   const [correctionHistoryMap, setCorrectionHistoryMap] = useState<Record<string, CorrectionRecord[]>>({});
   const [downloadHistoryMap, setDownloadHistoryMap] = useState<Record<string, DownloadRecord[]>>({});
@@ -270,16 +271,8 @@ export function AssessmentModal({
               Оценка контрагента
             </h2>
             <div className="mt-1 text-sm text-muted-foreground">
-              {assessment.counterpartyName} · ИНН {assessment.inn} · ОГРН {defaultOgrn} · Оценка: {assessment.date} · {sourceLabel}
+              {assessment.counterpartyName} · Оценка: {assessment.date} · {sourceLabel}
               {assessment.nextCheck && <> · Следующая проверка: {assessment.nextCheck}</>}
-              {" · "}
-              <button
-                type="button"
-                onClick={() => setRegistrationOpen(true)}
-                className="cursor-pointer text-primary transition hover:underline"
-              >
-                Подробнее
-              </button>
             </div>
             <div className={cn(
               "mt-5 rounded-3xl p-[1.5px]",
@@ -317,7 +310,37 @@ export function AssessmentModal({
               <aside className="order-2 lg:col-start-2 lg:row-start-1">
 
                 <div className="space-y-3 lg:sticky lg:top-0">
-                  {effectivePositive ? <TrustFactorsWidget /> : <KeyAnomaliesWidget />}
+                  <div className="rounded-2xl border border-border bg-white p-5">
+                    <div className="text-sm font-semibold text-foreground">Информация</div>
+                    <div className="mt-3 space-y-3">
+                      <InfoRow label="ИНН" value={assessment.inn} />
+                      <InfoRow label="ОГРН" value={defaultOgrn} />
+                      <InfoRow
+                        label="Дата регистрации"
+                        value={defaultRegistrationInfo.registrationDate}
+                      />
+                      <InfoRow label="Текущий статус ЕГРЮЛ" value="Действующая" />
+                      {infoExpanded && (
+                        <>
+                          <InfoRow
+                            label="Основной ОКВЭД"
+                            value={`${defaultRegistrationInfo.okvedCode} · ${defaultRegistrationInfo.okvedName}`}
+                          />
+                          <InfoRow
+                            label="Юридический адрес"
+                            value={defaultRegistrationInfo.legalAddress}
+                          />
+                        </>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setInfoExpanded((v) => !v)}
+                      className="mt-3 text-xs font-medium text-primary hover:underline"
+                    >
+                      {infoExpanded ? "Свернуть" : "Подробнее"}
+                    </button>
+                  </div>
 
                   <DownloadHistoryEntry
                     count={downloadHistory.length}
@@ -565,6 +588,15 @@ function OtherGroupsAccordion({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-sm leading-snug text-foreground break-words">{value}</div>
     </div>
   );
 }
