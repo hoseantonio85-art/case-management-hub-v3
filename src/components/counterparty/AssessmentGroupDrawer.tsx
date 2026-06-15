@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { InModalDrawer } from "./InModalDrawer";
+import { NormAssistantIcon } from "./NormAssistantIcon";
 import {
   type AssessmentGroup,
   type AssessmentCriterion,
