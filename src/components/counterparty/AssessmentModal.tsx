@@ -223,9 +223,6 @@ export function AssessmentModal({
       ? { label: "Сделки заключать можно", chip: "bg-emerald-100 text-emerald-900" }
       : { label: "Не заключать сделки", chip: "bg-rose-100 text-rose-900" };
 
-  const baseSourceLabel =
-    assessment.source === "auto" ? "Автоматический мониторинг" : "Запущено пользователем";
-  const sourceLabel = baseSourceLabel;
 
 
 
@@ -268,12 +265,8 @@ export function AssessmentModal({
               </span>
             </div>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
-              Оценка контрагента
+              Оценка контрагента {assessment.counterpartyName}
             </h2>
-            <div className="mt-1 text-sm text-muted-foreground">
-              {assessment.counterpartyName} · Оценка: {assessment.date} · {sourceLabel}
-              {assessment.nextCheck && <> · Следующая проверка: {assessment.nextCheck}</>}
-            </div>
             <div className={cn(
               "mt-5 rounded-3xl p-[1.5px]",
               effectivePositive
@@ -316,8 +309,13 @@ export function AssessmentModal({
                       <InfoRow label="ИНН" value={assessment.inn} />
                       <InfoRow label="ОГРН" value={defaultOgrn} />
                       <InfoRow
-                        label="Дата регистрации"
-                        value={defaultRegistrationInfo.registrationDate}
+                        label="Дата оценки"
+                        value={
+                          <div>
+                            <div className="text-sm leading-snug text-foreground">{assessment.date}</div>
+                            <div className="text-[11px] text-muted-foreground">обновлено сегодня</div>
+                          </div>
+                        }
                       />
                       <InfoRow label="Текущий статус ЕГРЮЛ" value="Действующая" />
                       {infoExpanded && (
