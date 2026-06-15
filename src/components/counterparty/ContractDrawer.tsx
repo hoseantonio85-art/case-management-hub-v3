@@ -119,6 +119,21 @@ export function ContractDrawer({
   const [showAddOverdue, setShowAddOverdue] = useState(false);
   const [overdueAddedNotice, setOverdueAddedNotice] = useState(false);
 
+  // Update data form + change history
+  type ChangeEntry = {
+    date: string;
+    author: string;
+    from: { number: string; debt: number; overdue: number; stage: string };
+    to: { number: string; debt: number; overdue: number; stage: string };
+  };
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDebt, setEditDebt] = useState("");
+  const [editOverdueAmt, setEditOverdueAmt] = useState("");
+  const [editStage, setEditStage] = useState<string>("");
+  const [changeHistory, setChangeHistory] = useState<ChangeEntry[]>([]);
+
   useEffect(() => {
     if (!contract || !open) return;
     const stageStart = stageToStartStep[contract.collectionStage ?? ""] ?? 1;
@@ -138,6 +153,9 @@ export function ContractDrawer({
     setShowAddOverdue(false);
     setOverdueAddedNotice(false);
     setOverdueError(null);
+    setUpdateOpen(false);
+    setHistoryOpen(false);
+    setChangeHistory([]);
     setHistory([
       {
         date: formatDDMMYYYY(TODAY),
