@@ -772,14 +772,16 @@ export default function Index() {
                     <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                       <div className="flex flex-wrap items-center gap-1.5">
                         {(() => {
-                          const catLabel: Record<CategoryKey, string> = {
-                            risk: "Риск дефолта",
-                            no_risk: "Нет риска",
-                            overdue_risk: "Просрочено с риском дефолта",
-                            overdue: "Просрочено",
-                          };
-                          return <CounterpartyStatusBadge tag={catLabel[c.status]} />;
+                          return <CounterpartyStatusBadge tag={categoryLabel[c.status]} />;
                         })()}
+                        {statusChanges[c.inn] && statusChanges[c.inn].from !== statusChanges[c.inn].to && (
+                          <span
+                            title={`${categoryLabel[statusChanges[c.inn].from as CategoryKey]} → ${categoryLabel[statusChanges[c.inn].to as CategoryKey]}`}
+                            className="inline-flex items-center rounded-full border border-violet-100 bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700"
+                          >
+                            Статус изменён
+                          </span>
+                        )}
                         {indicators
                           .map((k) => ({ k, m: problemIndicatorMeta[k] }))
                           .filter((x) => Boolean(x.m))
