@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,8 @@ import {
   Paperclip,
   History as HistoryIcon,
   Info as InfoIcon,
+  RefreshCcw,
+  X,
 } from "lucide-react";
 import type { Contract, OverdueRecord } from "@/lib/mock-data";
 import { toneStyles } from "./header-theme";
@@ -81,6 +84,7 @@ export function ContractDrawer({
   onOpenChange,
   onAddOverdue,
   onAdvanceStage,
+  onUpdateContract,
 }: {
   contract: Contract | null;
   counterpartyName?: string;
@@ -91,6 +95,7 @@ export function ContractDrawer({
   onOpenChange: (o: boolean) => void;
   onAddOverdue: (id: string, record: OverdueRecord) => void;
   onAdvanceStage: (id: string) => void;
+  onUpdateContract?: (id: string, patch: Partial<Contract>) => void;
 }) {
   const [stepIdx, setStepIdx] = useState(1);
   const [stepStartedAt, setStepStartedAt] = useState<string>(formatDDMMYYYY(TODAY));
@@ -114,6 +119,21 @@ export function ContractDrawer({
   const [showAddOverdue, setShowAddOverdue] = useState(false);
   const [overdueAddedNotice, setOverdueAddedNotice] = useState(false);
 
+  // Update data form + change history
+  type ChangeEntry = {
+    date: string;
+    author: string;
+    from: { number: string; debt: number; overdue: number; stage: string };
+    to: { number: string; debt: number; overdue: number; stage: string };
+  };
+  const [updateOpen, setUpdateOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDebt, setEditDebt] = useState("");
+  const [editOverdueAmt, setEditOverdueAmt] = useState("");
+  const [editStage, setEditStage] = useState<string>("");
+  const [changeHistory, setChangeHistory] = useState<ChangeEntry[]>([]);
+
   useEffect(() => {
     if (!contract || !open) return;
     const stageStart = stageToStartStep[contract.collectionStage ?? ""] ?? 1;
@@ -133,6 +153,9 @@ export function ContractDrawer({
     setShowAddOverdue(false);
     setOverdueAddedNotice(false);
     setOverdueError(null);
+    setUpdateOpen(false);
+    setHistoryOpen(false);
+    setChangeHistory([]);
     setHistory([
       {
         date: formatDDMMYYYY(TODAY),
@@ -317,7 +340,7 @@ export function ContractDrawer({
         </div>
       </div>
 
-      <div className="space-y-4 px-6 pb-6 pt-4">
+      <div className="space-y-4 px-6 pb-24 pt-4">
         {notice && (
           <div className="flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900">
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
@@ -585,6 +608,178 @@ export function ContractDrawer({
           </section>
         )}
       </div>
+
+      {/* Sticky footer */}
+      <div className="sticky bottom-0 z-20 border-t border-border bg-white px-6 py-4">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 flex-1 rounded-xl"
+            onClick={() => setHistoryOpen(true)}
+          >
+            <HistoryIcon className="mr-1.5 h-4 w-4" />
+            История изменений
+          </Button>
+          <Button
+            type="button"
+            className="h-11 flex-1 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700"
+            onClick={() => {
+              setEditName(contract.number);
+              setEditDebt(String(contract.debt));
+              setEditOverdueAmt(String(contract.overdue));
+              setEditStage(STEPS[stepIdx]);
+              setUpdateOpen(true);
+            }}
+          >
+            <RefreshCcw className="mr-1.5 h-4 w-4" />
+            Обновить данные
+          </Button>
+        </div>
+      </div>
+
+      {/* Update form overlay */}
+      {updateOpen && (
+        <div className="absolute inset-0 z-50 flex flex-col bg-white">
+          <div className="flex items-start justify-between border-b border-border px-6 py-4">
+            <div>
+              <h3 className="text-lg font-semibold">Обновить данные договора</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Измените текущие значения. Старые данные попадут в историю изменений.
+              </p>
+            </div>
+            <button
+              onClick={() => setUpdateOpen(false)}
+              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"
+              aria-label="Закрыть"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex-1 space-y-3 overflow-y-auto px-6 py-4">
+            <LabeledInput label="Название договора" value={editName} onChange={setEditName} />
+            <LabeledInput label="Задолженность" value={editDebt} onChange={setEditDebt} placeholder="0" />
+            <LabeledInput label="Просрочка" value={editOverdueAmt} onChange={setEditOverdueAmt} placeholder="0" />
+            <div>
+              <div className="mb-1 text-xs text-muted-foreground">Этап</div>
+              <select
+                value={editStage}
+                onChange={(e) => setEditStage(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                {STEPS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 border-t border-border bg-white px-6 py-4">
+            <Button variant="outline" onClick={() => setUpdateOpen(false)}>
+              Отменить
+            </Button>
+            <Button
+              className="bg-emerald-600 text-white hover:bg-emerald-700"
+              onClick={() => {
+                const parseNum = (v: string) => {
+                  const n = Number(String(v).replace(/[^\d.,-]/g, "").replace(",", "."));
+                  return Number.isFinite(n) ? n : 0;
+                };
+                const newName = editName.trim() || contract.number;
+                const newDebt = parseNum(editDebt);
+                const newOverdue = parseNum(editOverdueAmt);
+                const newStage = editStage || STEPS[stepIdx];
+                const oldStage = STEPS[stepIdx];
+                const entry: ChangeEntry = {
+                  date: formatDDMMYYYY(TODAY),
+                  author: "Измайлова Л.Д. • Инициатор",
+                  from: {
+                    number: contract.number,
+                    debt: contract.debt,
+                    overdue: contract.overdue,
+                    stage: oldStage,
+                  },
+                  to: { number: newName, debt: newDebt, overdue: newOverdue, stage: newStage },
+                };
+                setChangeHistory((prev) => [entry, ...prev]);
+                const newIdx = STEPS.indexOf(newStage as (typeof STEPS)[number]);
+                if (newIdx >= 0 && newIdx !== stepIdx) setStepIdx(newIdx);
+                onUpdateContract?.(contract.id, {
+                  number: newName,
+                  debt: newDebt,
+                  overdue: newOverdue,
+                  collectionStage: stageByStep[newStage] ?? contract.collectionStage,
+                });
+                setUpdateOpen(false);
+                toast.success("Данные договора обновлены");
+              }}
+            >
+              Сохранить
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Change history overlay */}
+      {historyOpen && (
+        <div className="absolute inset-0 z-50 flex flex-col bg-white">
+          <div className="flex items-start justify-between border-b border-border px-6 py-4">
+            <div>
+              <h3 className="text-lg font-semibold">История изменений</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Предыдущие значения договора и изменения данных.
+              </p>
+            </div>
+            <button
+              onClick={() => setHistoryOpen(false)}
+              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted"
+              aria-label="Закрыть"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 py-4">
+            {changeHistory.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
+                Изменений пока нет
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {changeHistory.map((h, i) => (
+                  <div key={i} className="rounded-xl border border-border bg-white p-3 text-xs">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="font-medium text-foreground">{h.date}</span>
+                      <span className="text-muted-foreground">{h.author}</span>
+                    </div>
+                    <div className="space-y-1 text-muted-foreground">
+                      <div>
+                        Название договора:{" "}
+                        <span className="text-foreground">{h.from.number}</span> →{" "}
+                        <span className="text-foreground">{h.to.number}</span>
+                      </div>
+                      <div>
+                        Задолженность:{" "}
+                        <span className="text-foreground">{h.from.debt.toFixed(1)} млн ₽</span> →{" "}
+                        <span className="text-foreground">{h.to.debt.toFixed(1)} млн ₽</span>
+                      </div>
+                      <div>
+                        Просрочка:{" "}
+                        <span className="text-foreground">{h.from.overdue.toFixed(1)} млн ₽</span> →{" "}
+                        <span className="text-foreground">{h.to.overdue.toFixed(1)} млн ₽</span>
+                      </div>
+                      <div>
+                        Этап: <span className="text-foreground">{h.from.stage}</span> →{" "}
+                        <span className="text-foreground">{h.to.stage}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </InModalDrawer>
   );
 }
