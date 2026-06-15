@@ -359,108 +359,6 @@ export function ContractDrawer({
           </div>
         )}
 
-        {/* WORK ON CONTRACT — compact */}
-        <Card title="Работа по договору">
-          <div className="grid grid-cols-3 gap-3 text-sm">
-            <Field label="Этап" value={currentTitle} />
-            <Field
-              label="Плановая дата"
-              value={dueDateObj ? formatDDMMYYYY(dueDateObj) : "—"}
-            />
-            <Field
-              label="Статус срока"
-              value={
-                daysRemaining === null
-                  ? "—"
-                  : daysRemaining >= 0
-                    ? `Осталось ${daysRemaining} дн.`
-                    : `Срок истек на ${-daysRemaining} дн.`
-              }
-              valueClass={
-                daysRemaining !== null && daysRemaining < 0 ? "text-amber-700" : ""
-              }
-            />
-          </div>
-
-
-          {/* Change stage */}
-          <div className="mt-4 border-t border-border pt-4">
-            {!editing ? (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  setEditing(true);
-                  setTransitionError(null);
-                }}
-                disabled={!nextTitle}
-              >
-                <ChevronDown className="mr-2 h-4 w-4" /> Изменить этап
-              </Button>
-            ) : (
-              <div className="space-y-3 rounded-xl border border-border bg-white p-3">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-semibold">Переход на следующий этап</div>
-                  <button
-                    onClick={() => setEditing(false)}
-                    className="text-xs text-muted-foreground hover:underline"
-                  >
-                    <ChevronUp className="inline h-3.5 w-3.5" /> Свернуть
-                  </button>
-                </div>
-                <Row label="Текущий этап" value={currentTitle} />
-                <Row label="Следующий этап" value={nextTitle ?? "—"} />
-
-                <div>
-                  <div className="mb-1 text-xs text-muted-foreground">
-                    Дата завершения текущего этапа
-                  </div>
-                  <Input
-                    placeholder="ДД.ММ.ГГГГ"
-                    value={completionDate}
-                    onChange={(e) => setCompletionDate(e.target.value)}
-                  />
-                </div>
-
-                {requiredFields.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="text-xs font-medium text-foreground">
-                      Обязательные данные текущего этапа
-                    </div>
-                    {requiredFields.map((f) => (
-                      <FieldInput
-                        key={f.key}
-                        field={f}
-                        value={curFields[f.key] ?? ""}
-                        onChange={(v) => handleFieldChange(f.key, v)}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                <div>
-                  <div className="mb-1 text-xs text-muted-foreground">Комментарий</div>
-                  <Textarea
-                    placeholder="Контекст перехода (необязательно)"
-                    value={transitionComment}
-                    onChange={(e) => setTransitionComment(e.target.value)}
-                  />
-                </div>
-
-                {transitionError && (
-                  <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    {transitionError}
-                  </div>
-                )}
-
-                <Button className="w-full" onClick={handleConfirmTransition}>
-                  Подтвердить переход
-                </Button>
-              </div>
-            )}
-          </div>
-        </Card>
 
         {/* OVERDUE HISTORY + INLINE ADD */}
         <section className="rounded-xl border border-border bg-white p-4">
@@ -596,22 +494,6 @@ export function ContractDrawer({
           )}
         </section>
 
-
-        {/* STAGE HISTORY */}
-        {history.length === 0 ? (
-          <div className="px-1 text-xs text-muted-foreground">История пока пуста</div>
-        ) : (
-          <section className="rounded-xl border border-border bg-white p-4">
-            <div className="mb-2 text-xs font-semibold text-foreground">История этапов договора</div>
-            <div className="space-y-1.5">
-              {history.slice(0, 2).map((h, i) => (
-                <div key={i} className="text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">{h.date}</span> · {h.action} · {h.step}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
       </div>
 
       {/* Sticky footer */}
@@ -638,7 +520,7 @@ export function ContractDrawer({
             }}
           >
             <RefreshCcw className="mr-1.5 h-4 w-4" />
-            Обновить данные
+            Внести изменения
           </Button>
         </div>
       </div>
