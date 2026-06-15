@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +12,8 @@ import {
   Paperclip,
   History as HistoryIcon,
   Info as InfoIcon,
+  RefreshCcw,
+  X,
 } from "lucide-react";
 import type { Contract, OverdueRecord } from "@/lib/mock-data";
 import { toneStyles } from "./header-theme";
