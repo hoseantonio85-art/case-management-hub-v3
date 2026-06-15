@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Pencil, Plus, CheckCircle2, X, ShieldCheck } from "lucide-react";
+import { Pencil, Plus, CheckCircle2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import type { Contract, Counterparty } from "@/lib/mock-data";
 
