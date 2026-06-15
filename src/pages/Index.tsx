@@ -17,6 +17,7 @@ import {
   Loader2,
   SlidersHorizontal,
   X,
+  ShieldCheck,
 } from "lucide-react";
 import { counterparties, type Counterparty, type RiskType, type ProcessStage } from "@/lib/mock-data";
 import { CounterpartyModal } from "@/components/counterparty/CounterpartyModal";
