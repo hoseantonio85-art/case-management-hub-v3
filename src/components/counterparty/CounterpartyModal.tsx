@@ -832,6 +832,10 @@ export function CounterpartyModal({
               return { ...prev, collectionStage: stages[Math.min(i + 1, stages.length - 1)] || stages[0] };
             });
           }}
+          onUpdateContract={(id, patch) => {
+            setContracts((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+            setContractDrawer((prev) => (prev && prev.id === id ? { ...prev, ...patch } : prev));
+          }}
         />
 
         <RegistrationInfoDrawer
