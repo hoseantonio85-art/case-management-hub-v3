@@ -270,16 +270,8 @@ export function AssessmentModal({
               Оценка контрагента
             </h2>
             <div className="mt-1 text-sm text-muted-foreground">
-              {assessment.counterpartyName} · ИНН {assessment.inn} · ОГРН {defaultOgrn} · Оценка: {assessment.date} · {sourceLabel}
+              {assessment.counterpartyName} · Оценка: {assessment.date} · {sourceLabel}
               {assessment.nextCheck && <> · Следующая проверка: {assessment.nextCheck}</>}
-              {" · "}
-              <button
-                type="button"
-                onClick={() => setRegistrationOpen(true)}
-                className="cursor-pointer text-primary transition hover:underline"
-              >
-                Подробнее
-              </button>
             </div>
             <div className={cn(
               "mt-5 rounded-3xl p-[1.5px]",
