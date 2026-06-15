@@ -310,7 +310,37 @@ export function AssessmentModal({
               <aside className="order-2 lg:col-start-2 lg:row-start-1">
 
                 <div className="space-y-3 lg:sticky lg:top-0">
-                  {effectivePositive ? <TrustFactorsWidget /> : <KeyAnomaliesWidget />}
+                  <div className="rounded-2xl border border-border bg-white p-5">
+                    <div className="text-sm font-semibold text-foreground">Информация</div>
+                    <div className="mt-3 space-y-3">
+                      <InfoRow label="ИНН" value={assessment.inn} />
+                      <InfoRow label="ОГРН" value={defaultOgrn} />
+                      <InfoRow
+                        label="Дата регистрации"
+                        value={defaultRegistrationInfo.registrationDate}
+                      />
+                      <InfoRow label="Текущий статус ЕГРЮЛ" value="Действующая" />
+                      {infoExpanded && (
+                        <>
+                          <InfoRow
+                            label="Основной ОКВЭД"
+                            value={`${defaultRegistrationInfo.okvedCode} · ${defaultRegistrationInfo.okvedName}`}
+                          />
+                          <InfoRow
+                            label="Юридический адрес"
+                            value={defaultRegistrationInfo.legalAddress}
+                          />
+                        </>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setInfoExpanded((v) => !v)}
+                      className="mt-3 text-xs font-medium text-primary hover:underline"
+                    >
+                      {infoExpanded ? "Свернуть" : "Подробнее"}
+                    </button>
+                  </div>
 
                   <DownloadHistoryEntry
                     count={downloadHistory.length}
