@@ -954,6 +954,14 @@ function EmptyState({ text }: { text: string }) {
   );
 }
 
+function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-sm leading-snug text-foreground break-words">{value}</div>
+    </div>
+  );
+}
 
 function Cell({
   label,
