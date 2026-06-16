@@ -6,11 +6,12 @@ import { NormAssistantIcon } from "./NormAssistantIcon";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { largeModalContentClass } from "@/lib/modal-styles";
-import { AssessmentCorrectionDrawer, type CorrectionPayload, type CorrectionTag, type CounterpartyStatus, correctionTagToStatus } from "./AssessmentCorrectionDrawer";
+import { type CounterpartyStatus } from "./AssessmentCorrectionDrawer";
 import { getToneForTag, toneStyles } from "./header-theme";
 import {
   type Assessment,
   type AssessmentGroup,
+  type AssessmentGroupId,
   groupCounts,
   sumGroupCounts,
   MAIN_GROUP_IDS,
@@ -23,10 +24,11 @@ import { RegistrationInfoDrawer } from "./RegistrationInfoDrawer";
 import { KeyAnomaliesWidget } from "./KeyAnomaliesWidget";
 import { TrustFactorsWidget } from "./TrustFactorsWidget";
 import {
-  CorrectionHistoryEntry,
-  CorrectionHistoryDrawer,
-  type CorrectionRecord,
-} from "./AssessmentHistoryDrawer";
+  CommentHistoryEntry,
+  CommentHistoryDrawer,
+  type CommentRecord,
+} from "./AssessmentCommentHistory";
+import { AssessmentCommentDrawer, type AssessmentCommentPayload } from "./AssessmentCommentDrawer";
 
 export type AssessmentStatus = "pending" | "confirmed" | "disagreed" | "updated" | "review";
 
@@ -120,25 +122,25 @@ export function AssessmentModal({
   const [groupDrawer, setGroupDrawer] = useState<AssessmentGroup | null>(null);
   const [registrationOpen, setRegistrationOpen] = useState(false);
 
-  // Correction drawer (replaces old inline disagreement flow).
-  const [correctionOpen, setCorrectionOpen] = useState(false);
+  // Comment drawer (replaces old correction flow).
+  const [commentOpen, setCommentOpen] = useState(false);
 
 
   // History blocks (persist per-counterparty within the session)
-  const [correctionHistoryOpen, setCorrectionHistoryOpen] = useState(false);
+  const [commentHistoryOpen, setCommentHistoryOpen] = useState(false);
   const [infoExpanded, setInfoExpanded] = useState(false);
-  const [correctionHistoryMap, setCorrectionHistoryMap] = useState<Record<string, CorrectionRecord[]>>({});
-  const [correctedTagMap, setCorrectedTagMap] = useState<Record<string, CorrectionTag>>({});
+  const [commentHistoryMap, setCommentHistoryMap] = useState<Record<string, CommentRecord[]>>({});
+  const [commentedGroupsMap, setCommentedGroupsMap] = useState<Record<string, AssessmentGroupId[]>>({});
 
   const inn = assessment?.inn ?? "";
-  const correctionHistory = correctionHistoryMap[inn] ?? [];
-  const correctedTag = correctedTagMap[inn] ?? null;
+  const commentHistory = commentHistoryMap[inn] ?? [];
+  const commentedGroupIds = commentedGroupsMap[inn] ?? [];
 
   // Only reset transient UI state when modal closes.
   useEffect(() => {
     if (!open) {
-      setCorrectionOpen(false);
-      setCorrectionHistoryOpen(false);
+      setCommentOpen(false);
+      setCommentHistoryOpen(false);
     }
   }, [open]);
 
@@ -149,57 +151,40 @@ export function AssessmentModal({
     return `Сегодня, ${hh}:${mm}`;
   };
 
-  const formatMonitoringDate = (iso: string) => {
-    if (!iso) return "—";
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return iso;
-    return d.toLocaleDateString("ru-RU");
-  };
+  const currentTagLabel = positive ? "Нет риска" : "Риск дефолта";
 
-  const currentTagLabel = correctedTag ?? (positive ? "Нет риска" : "Риск дефолта");
-
-  const handleCorrectionSubmit = (payload: CorrectionPayload) => {
+  const handleCommentSubmit = (payload: AssessmentCommentPayload) => {
     if (!inn) return;
-    const fromTag = currentTagLabel;
-    const record: CorrectionRecord = {
+    const record: CommentRecord = {
       id: `c-${Date.now()}`,
       dateTime: nowLabel(),
       author: "Измайлова Л.Д. • Инициатор",
-      fromTag,
-      toTag: payload.tag,
+      groupTitles: payload.groupTitles,
       comment: payload.comment,
-      monitoringDate: formatMonitoringDate(payload.monitoringDate),
     };
-    setCorrectionHistoryMap((prev) => ({
+    setCommentHistoryMap((prev) => ({
       ...prev,
       [inn]: [record, ...(prev[inn] ?? [])],
     }));
-    setCorrectedTagMap((prev) => ({ ...prev, [inn]: payload.tag }));
-    onStatusChange?.(correctionTagToStatus[payload.tag]);
-    onDisagree({
-      text: payload.comment,
-      status: "submitted",
-      submittedAt: new Date().toISOString(),
+    setCommentedGroupsMap((prev) => {
+      const existing = prev[inn] ?? [];
+      const merged = Array.from(new Set([...existing, ...payload.groupIds]));
+      return { ...prev, [inn]: merged };
     });
-    toast("Корректировка оценки отправлена");
+    toast("Комментарий сохранён в истории оценки");
   };
 
 
   if (!assessment) return null;
 
-  const effectivePositive = correctedTag ? correctedTag === "Нет риска" : positive;
-  const headerTone = correctedTag ? getToneForTag(correctedTag) : null;
-  const headerBg = headerTone
-    ? toneStyles[headerTone].gradient
-    : effectivePositive
-      ? "bg-gradient-to-b from-emerald-50 via-emerald-50/40 to-transparent"
-      : statusMeta[status].headerBg;
+  const effectivePositive = positive;
+  const headerBg = effectivePositive
+    ? "bg-gradient-to-b from-emerald-50 via-emerald-50/40 to-transparent"
+    : statusMeta[status].headerBg;
   const meta = { label: "", chip: "", headerBg };
-  const resolutionBadge = correctedTag
-    ? { label: correctedTag, chip: toneStyles[getToneForTag(correctedTag)].badge }
-    : effectivePositive
-      ? { label: "Сделки заключать можно", chip: "bg-emerald-100 text-emerald-900" }
-      : { label: "Не заключать сделки", chip: "bg-rose-100 text-rose-900" };
+  const resolutionBadge = effectivePositive
+    ? { label: "Сделки заключать можно", chip: "bg-emerald-100 text-emerald-900" }
+    : { label: "Не заключать сделки", chip: "bg-rose-100 text-rose-900" };
 
 
 
@@ -318,10 +303,10 @@ export function AssessmentModal({
                     </button>
                   </div>
 
-                  <CorrectionHistoryEntry
-                    count={correctionHistory.length}
-                    lastDate={correctionHistory[0]?.dateTime ?? ""}
-                    onOpen={() => setCorrectionHistoryOpen(true)}
+                  <CommentHistoryEntry
+                    count={commentHistory.length}
+                    lastDate={commentHistory[0]?.dateTime ?? ""}
+                    onOpen={() => setCommentHistoryOpen(true)}
                   />
 
 
@@ -339,7 +324,12 @@ export function AssessmentModal({
                     const g = assessment.groups.find((x) => x.id === id);
                     if (!g) return null;
                     return (
-                      <GroupCard key={g.id} group={g} onOpen={setGroupDrawer} />
+                      <GroupCard
+                        key={g.id}
+                        group={g}
+                        onOpen={setGroupDrawer}
+                        hasComment={commentedGroupIds.includes(g.id)}
+                      />
                     );
                   })}
                   {(() => {
@@ -361,7 +351,7 @@ export function AssessmentModal({
           <div className="shrink-0 border-t border-border bg-white px-5 py-4 lg:px-10">
             <Button
               variant="outline"
-              onClick={() => setCorrectionOpen(true)}
+              onClick={() => setCommentOpen(true)}
               className="h-12 w-full rounded-full text-sm font-medium"
             >
               Не согласен
@@ -385,16 +375,17 @@ export function AssessmentModal({
             ogrn={defaultOgrn}
           />
 
-          <CorrectionHistoryDrawer
-            open={correctionHistoryOpen}
-            onOpenChange={setCorrectionHistoryOpen}
-            records={correctionHistory}
+          <CommentHistoryDrawer
+            open={commentHistoryOpen}
+            onOpenChange={setCommentHistoryOpen}
+            records={commentHistory}
           />
 
-          <AssessmentCorrectionDrawer
-            open={correctionOpen}
-            onOpenChange={setCorrectionOpen}
-            onSubmit={handleCorrectionSubmit}
+          <AssessmentCommentDrawer
+            open={commentOpen}
+            onOpenChange={setCommentOpen}
+            groups={MAIN_GROUP_IDS.map((id) => assessment.groups.find((x) => x.id === id)).filter((g): g is AssessmentGroup => !!g)}
+            onSubmit={handleCommentSubmit}
           />
         </div>
         </DialogPrimitive.Content>
@@ -433,10 +424,12 @@ function GroupCard({
   group,
   onOpen,
   compact = false,
+  hasComment = false,
 }: {
   group: AssessmentGroup;
   onOpen: (g: AssessmentGroup) => void;
   compact?: boolean;
+  hasComment?: boolean;
 }) {
   const counts = groupCounts(group);
   const negatives = group.criteria.filter((c) => c.passed === false);
@@ -469,6 +462,11 @@ function GroupCard({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {hasComment && (
+            <span className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
+              Комментарий
+            </span>
+          )}
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-foreground" />
         </div>
       </div>
