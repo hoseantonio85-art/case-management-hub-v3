@@ -402,6 +402,9 @@ export function ContractDrawer({
       return ns;
     });
     if (payOpenIdx === i) setPayOpenIdx(null);
+  };
+
+
 
   const handleAddRepayment = (i: number) => {
     const n = Number(payAmount.replace(",", "."));
