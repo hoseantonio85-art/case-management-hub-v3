@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, ArrowLeft, ChevronRight } from "lucide-react";
+import { X, ArrowLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { NormAssistantIcon } from "./NormAssistantIcon";
 import { Button } from "@/components/ui/button";
@@ -471,18 +471,23 @@ function GroupCard({
         </div>
       </div>
       {negatives.length > 0 && (
-        <div className="border-t border-rose-100 px-3 py-2 space-y-1.5">
-          {visibleNegatives.map((c) => (
-            <div
-              key={c.number}
-              className="rounded-md bg-rose-50/70 px-2.5 py-1.5"
-            >
-              <div className="text-sm font-medium text-rose-900">{c.title}</div>
-              {c.reason && c.reason !== "Нарушений не выявлено" && c.reason !== "Нет данных для проверки" && (
-                <div className="mt-0.5 text-xs text-muted-foreground">{c.reason}</div>
-              )}
-            </div>
-          ))}
+        <div className="border-t border-rose-50/60 px-3 pb-2.5 pt-2">
+          <div className="space-y-1.5">
+            {visibleNegatives.map((c) => (
+              <div
+                key={c.number}
+                className="flex items-start gap-1.5 rounded-md border-l-2 border-rose-300 bg-rose-50/30 py-1 pl-2 pr-1.5"
+              >
+                <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-rose-500" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium text-rose-800">{c.title}</div>
+                  {c.reason && c.reason !== "Нарушений не выявлено" && c.reason !== "Нет данных для проверки" && (
+                    <div className="mt-0.5 text-[11px] leading-snug text-muted-foreground line-clamp-2">{c.reason}</div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
           {hiddenCount > 0 && (
             <button
               type="button"
@@ -490,7 +495,7 @@ function GroupCard({
                 e.stopPropagation();
                 setExpanded((v) => !v);
               }}
-              className="text-xs font-medium text-rose-700 hover:text-rose-800"
+              className="mt-1.5 text-xs font-medium text-rose-700 hover:text-rose-800"
             >
               {expanded ? "Свернуть" : `Показать ещё ${hiddenCount}`}
             </button>
