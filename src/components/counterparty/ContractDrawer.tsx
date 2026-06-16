@@ -339,7 +339,7 @@ export function ContractDrawer({
   ];
 
   return (
-    <InModalDrawer open={open} onOpenChange={onOpenChange} className="overflow-hidden">
+    <InModalDrawer open={open} onOpenChange={onOpenChange}>
       {/* HEADER */}
       <div className={`px-6 pt-6 pb-5 ${styles.gradient}`}>
         <span
