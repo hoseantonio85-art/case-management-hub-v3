@@ -52,6 +52,15 @@ function buildNewCounterparty(inn: string, today: string): Counterparty {
   };
 }
 
+function getContractWord(count: number): string {
+  const lastTwo = count % 100;
+  const lastOne = count % 10;
+  if (lastTwo >= 11 && lastTwo <= 14) return "договоров";
+  if (lastOne === 1) return "договор";
+  if (lastOne >= 2 && lastOne <= 4) return "договора";
+  return "договоров";
+}
+
 
 type CategoryKey = "risk" | "overdue_risk" | "no_risk" | "overdue";
 
