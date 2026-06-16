@@ -134,7 +134,7 @@ export function AssessmentModal({
 
   const inn = assessment?.inn ?? "";
   const commentHistory = commentHistoryMap[inn] ?? [];
-  const commentedGroupIds = commentedGroupsMap[inn] ?? [];
+  
 
   // Only reset transient UI state when modal closes.
   useEffect(() => {
@@ -171,7 +171,7 @@ export function AssessmentModal({
       const merged = Array.from(new Set([...existing, ...payload.groupIds]));
       return { ...prev, [inn]: merged };
     });
-    toast("Комментарий сохранён в истории оценки");
+    toast("Замечание сохранено в блоке «Замечания к оценке»");
   };
 
 
@@ -328,7 +328,6 @@ export function AssessmentModal({
                         key={g.id}
                         group={g}
                         onOpen={setGroupDrawer}
-                        hasComment={commentedGroupIds.includes(g.id)}
                       />
                     );
                   })}
@@ -424,12 +423,10 @@ function GroupCard({
   group,
   onOpen,
   compact = false,
-  hasComment = false,
 }: {
   group: AssessmentGroup;
   onOpen: (g: AssessmentGroup) => void;
   compact?: boolean;
-  hasComment?: boolean;
 }) {
   const counts = groupCounts(group);
   const negatives = group.criteria.filter((c) => c.passed === false);
@@ -462,11 +459,6 @@ function GroupCard({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {hasComment && (
-            <span className="inline-flex items-center rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-700">
-              Комментарий
-            </span>
-          )}
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-foreground" />
         </div>
       </div>
