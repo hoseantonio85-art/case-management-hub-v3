@@ -431,10 +431,6 @@ function GroupCard({
   compact?: boolean;
   hasComment?: boolean;
 }) {
-  group: AssessmentGroup;
-  onOpen: (g: AssessmentGroup) => void;
-  compact?: boolean;
-}) {
   const counts = groupCounts(group);
   const negatives = group.criteria.filter((c) => c.passed === false);
   const [expanded, setExpanded] = useState(false);
