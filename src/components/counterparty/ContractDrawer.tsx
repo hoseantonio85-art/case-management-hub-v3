@@ -319,6 +319,90 @@ export function ContractDrawer({
     setShowAddAdjustment(false);
   };
 
+  const openEditAdjustment = (a: DebtAdjustment) => {
+    setEditAdjId(a.id);
+    setEditAdjAmount(String(Math.round(a.amount * 1_000_000)));
+    setEditAdjDate(a.date);
+    setEditAdjType(a.type);
+    setEditAdjError(null);
+    setShowAddAdjustment(false);
+  };
+
+  const handleSaveAdjEdit = () => {
+    if (!editAdjId) return;
+    const a = adjustments.find((x) => x.id === editAdjId);
+    if (!a) return;
+    const n = Number(editAdjAmount.replace(",", "."));
+    if (!editAdjAmount || !Number.isFinite(n) || n <= 0) {
+      setEditAdjError("Введите сумму корректировки");
+      return;
+    }
+    if (!editAdjDate || !parseDDMMYYYY(editAdjDate)) {
+      setEditAdjError("Укажите дату корректировки");
+      return;
+    }
+    const amtMln = n / 1_000_000;
+    const next = adjustments.map((x) =>
+      x.id === a.id ? { ...x, amount: amtMln, date: editAdjDate, type: editAdjType } : x,
+    );
+    const delta = next.reduce((s, x) => s + (x.type === "increase" ? x.amount : -x.amount), 0);
+    if (contract.debt + delta < 0) {
+      setEditAdjError("Задолженность не может стать отрицательной");
+      return;
+    }
+    setAdjustments(next);
+    const newDebt = Math.max(0, contract.debt + delta);
+    onUpdateContract?.(contract.id, { debt: newDebt });
+    logChange(
+      "Корректировка задолженности изменена",
+      `${editAdjType === "increase" ? "+" : "−"}${amtMln.toFixed(2)} млн ₽ · ${editAdjDate}`,
+    );
+    toast.success("Задолженность обновлена");
+    setEditAdjId(null);
+  };
+
+  const handleDeleteAdjustment = (id: string) => {
+    const a = adjustments.find((x) => x.id === id);
+    if (!a) return;
+    const next = adjustments.filter((x) => x.id !== id);
+    setAdjustments(next);
+    const delta = next.reduce((s, x) => s + (x.type === "increase" ? x.amount : -x.amount), 0);
+    const newDebt = Math.max(0, contract.debt + delta);
+    onUpdateContract?.(contract.id, { debt: newDebt });
+    logChange(
+      "Удалена корректировка задолженности",
+      `${a.type === "increase" ? "+" : "−"}${a.amount.toFixed(2)} млн ₽ · ${a.date}`,
+    );
+    toast.success("Задолженность удалена");
+    if (editAdjId === id) setEditAdjId(null);
+  };
+
+  const handleDeleteOverdue = (i: number) => {
+    const o = overdues[i];
+    if (!o) return;
+    const next = overdues.filter((_, k) => k !== i);
+    setOverdues(next);
+    const newOverdueTotal = next.reduce(
+      (s, x) => s + Math.max(0, x.amount - x.repayments.reduce((a, r) => a + r.amount, 0)),
+      0,
+    );
+    onUpdateContract?.(contract.id, { overdue: newOverdueTotal });
+    logChange(
+      "Удалена просроченная ДЗ",
+      `${o.amount.toFixed(2)} млн ₽ · ${o.date}`,
+    );
+    toast.success("Просроченная ДЗ удалена");
+    setExpandedOverdues((s) => {
+      const ns: Record<number, boolean> = {};
+      Object.keys(s).forEach((k) => {
+        const idx = Number(k);
+        if (idx < i) ns[idx] = s[idx];
+        else if (idx > i) ns[idx - 1] = s[idx];
+      });
+      return ns;
+    });
+    if (payOpenIdx === i) setPayOpenIdx(null);
+
   const handleAddRepayment = (i: number) => {
     const n = Number(payAmount.replace(",", "."));
     const o = overdues[i];
