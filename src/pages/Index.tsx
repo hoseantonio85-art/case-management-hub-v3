@@ -892,91 +892,27 @@ export default function Index() {
         onStatusChange={handleStatusChange}
       />
 
-      {/* Run assessment by INN dialog */}
-      <Dialog
+      <RunCheckDialog
         open={runDialogOpen}
-        onOpenChange={(o) => {
-          if (runLoading) return;
-          setRunDialogOpen(o);
-          if (!o) setRunError(null);
+        onOpenChange={setRunDialogOpen}
+        onSubmit={(inn) => {
+          const today = new Date().toLocaleDateString("ru-RU");
+          const pendingCp: Counterparty = {
+            ...buildNewCounterparty(inn, today),
+            name: `Контрагент по ИНН ${inn}`,
+            tag: "На оценке",
+          };
+          setAddedCounterparties((prev) =>
+            prev.some((c) => c.inn === inn && c.tag === "На оценке")
+              ? prev
+              : [pendingCp, ...prev],
+          );
+          setRunDialogOpen(false);
+          setPendingCp(pendingCp);
+          setPendingCpOpen(true);
+          toast.success("Оценка успешно создана");
         }}
-      >
-        <DialogContent className="max-w-md gap-0 rounded-2xl p-0 [&>button]:hidden">
-          <div className="flex items-start gap-3 border-b border-border px-5 pt-5 pb-4">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-semibold text-foreground">Оценить контрагента</div>
-              <p className="mt-0.5 text-[12px] text-muted-foreground">
-                Введите ИНН, чтобы запустить проверку благонадёжности
-              </p>
-            </div>
-            <button
-              onClick={() => !runLoading && setRunDialogOpen(false)}
-              className="rounded p-1 text-muted-foreground hover:bg-muted"
-              aria-label="Закрыть"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          {runLoading ? (
-            <div className="flex items-start gap-3 px-5 py-6">
-              <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-primary" />
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-foreground">
-                  Запускаю оценку контрагента
-                </div>
-                <p className="mt-1 text-[12px] text-muted-foreground">
-                  Проверяю регистрационные данные, финансовые маркеры и судебную нагрузку
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="px-5 py-4">
-              <label className="text-[11px] font-medium text-muted-foreground">ИНН</label>
-              <Input
-                value={runInn}
-                onChange={(e) => {
-                  setRunInn(e.target.value);
-                  if (runError) setRunError(null);
-                }}
-                placeholder="Введите ИНН контрагента"
-                className="mt-1 bg-white"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleStartAssessment();
-                }}
-              />
-              {runError && (
-                <div className="mt-2 text-[12px] text-rose-600">{runError}</div>
-              )}
-            </div>
-          )}
-          <div className="flex justify-end gap-2 border-t border-border px-5 py-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setRunDialogOpen(false)}
-              disabled={runLoading}
-            >
-              Отмена
-            </Button>
-            <Button
-              size="sm"
-              onClick={handleStartAssessment}
-              disabled={runLoading || !runInn.trim()}
-            >
-              {runLoading ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" /> Запуск…
-                </>
-              ) : (
-                "Запустить оценку"
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      />
 
       <AssessmentModal
         assessment={manualAssessment}
