@@ -289,7 +289,11 @@ export default function Index() {
   const [statusOverrides, setStatusOverrides] = useState<Record<string, Counterparty["status"]>>({});
   const [statusChanges, setStatusChanges] = useState<
     Record<string, { from: Counterparty["status"]; to: Counterparty["status"] }>
-  >({});
+  >({
+    // Дефолтное состояние после ежедневного автообновления:
+    // ООО «Сигма-Логистик» перешёл из «Риск дефолта» в «Нет риска».
+    "7702345678": { from: "risk", to: "no_risk" },
+  });
 
   // DRPA update flow
   const [drpaOpen, setDrpaOpen] = useState(false);
