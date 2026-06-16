@@ -134,7 +134,7 @@ export function AssessmentModal({
 
   const inn = assessment?.inn ?? "";
   const commentHistory = commentHistoryMap[inn] ?? [];
-  const commentedGroupIds = commentedGroupsMap[inn] ?? [];
+  
 
   // Only reset transient UI state when modal closes.
   useEffect(() => {
