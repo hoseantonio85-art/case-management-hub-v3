@@ -897,6 +897,15 @@ export default function Index() {
         }}
       />
 
+      <PendingAssessmentModal
+        counterparty={pendingCp}
+        open={pendingCpOpen}
+        onOpenChange={(o) => {
+          setPendingCpOpen(o);
+          if (!o) setPendingCp(null);
+        }}
+      />
+
       <AssessmentModal
         assessment={manualAssessment}
         open={manualAssessmentOpen}
