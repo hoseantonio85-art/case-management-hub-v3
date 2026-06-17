@@ -66,24 +66,24 @@ export function ChecksWidget({
               <circle
                 cx="20"
                 cy="20"
-                r="16"
+                r="14"
                 fill="none"
-                stroke="#E5EDFF"
-                strokeWidth="3"
+                stroke="#D1D5DB"
+                strokeWidth="4"
               />
               <circle
                 cx="20"
                 cy="20"
-                r="16"
+                r="14"
                 fill="none"
                 stroke="url(#checkGradient)"
-                strokeWidth="3"
+                strokeWidth="4"
                 strokeLinecap="round"
-                strokeDasharray="100.5"
-                strokeDashoffset="60"
+                strokeDasharray="87.9"
+                strokeDashoffset="50"
               />
             </svg>
-            <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary shadow-sm">
+            <span className="relative flex h-7 w-7 items-center justify-center rounded-full bg-white text-primary shadow-sm">
               <Sparkles className="h-4 w-4" />
             </span>
           </span>
