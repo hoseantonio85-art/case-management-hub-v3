@@ -1063,7 +1063,7 @@ export function ContractDrawer({
       </div>
 
       {/* Fixed footer */}
-      <div className="sticky bottom-0 z-20 border-t border-border bg-white px-6 py-4">
+      <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-border bg-white px-6 py-4">
         <Button
           type="button"
           variant="outline"
