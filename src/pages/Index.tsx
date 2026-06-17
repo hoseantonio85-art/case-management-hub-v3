@@ -919,22 +919,17 @@ export default function Index() {
       <RunCheckDialog
         open={runDialogOpen}
         onOpenChange={setRunDialogOpen}
-        onSubmit={(inn) => {
-          const today = new Date().toLocaleDateString("ru-RU");
-          const pendingCp: Counterparty = {
-            ...buildNewCounterparty(inn, today),
-            name: `Контрагент по ИНН ${inn}`,
-            tag: "На оценке",
-          };
-          setAddedCounterparties((prev) =>
-            prev.some((c) => c.inn === inn && c.tag === "На оценке")
-              ? prev
-              : [pendingCp, ...prev],
-          );
+        onSubmit={(inn, files) => {
           setRunDialogOpen(false);
-          setPendingCp(pendingCp);
-          setPendingCpOpen(true);
-          toast.success("Оценка успешно создана");
+          const proc: CheckProcess = {
+            inn,
+            fileNames: files.map((f) => f.name),
+            status: "running",
+          };
+          setCheckProcess(proc);
+          window.setTimeout(() => {
+            setCheckProcess((prev) => (prev && prev.inn === inn ? { ...prev, status: "done" } : prev));
+          }, 2800);
         }}
       />
 
@@ -946,6 +941,62 @@ export default function Index() {
           if (!o) setPendingCp(null);
         }}
       />
+
+      <CheckProcessDrawer
+        open={checkDrawerOpen}
+        onOpenChange={setCheckDrawerOpen}
+        process={checkProcess}
+        onOpenAssessment={() => {
+          if (!checkProcess) return;
+          const a = buildAssessment(
+            `Контрагент по ИНН ${checkProcess.inn}`,
+            checkProcess.inn,
+            "auto",
+          );
+          setCheckAssessment(a);
+          setCheckDrawerOpen(false);
+          setCheckAssessmentOpen(true);
+        }}
+      />
+
+      <AssessmentModal
+        assessment={checkAssessment}
+        open={checkAssessmentOpen}
+        onOpenChange={(o) => {
+          setCheckAssessmentOpen(o);
+          if (!o) setCheckAssessment(null);
+        }}
+        status="updated"
+        disagreement={null}
+        defaultInn={checkAssessment?.inn}
+        onConfirm={() => {}}
+        onDisagree={() => {}}
+        completionMode
+        onDeleteResult={() => {
+          setCheckAssessmentOpen(false);
+          setCheckAssessment(null);
+          setCheckProcess(null);
+          toast("Результат проверки удалён");
+        }}
+        onAddToList={() => {
+          if (!checkProcess) return;
+          const today = new Date().toLocaleDateString("ru-RU");
+          const cp: Counterparty = {
+            ...buildNewCounterparty(checkProcess.inn, today),
+            name: `Контрагент по ИНН ${checkProcess.inn}`,
+            tag: "Нет риска",
+            status: "no_risk",
+          };
+          setAddedCounterparties((prev) =>
+            prev.some((c) => c.inn === cp.inn) ? prev : [cp, ...prev],
+          );
+          setCheckAssessmentOpen(false);
+          setCheckAssessment(null);
+          setCheckProcess(null);
+          toast.success("Контрагент добавлен в список дебиторов");
+        }}
+      />
+
 
       <AssessmentModal
         assessment={manualAssessment}
