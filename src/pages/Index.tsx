@@ -729,7 +729,7 @@ export default function Index() {
               </div>
             )}
 
-            <div className="mb-5 flex flex-wrap gap-2">
+            <div className="mb-5 flex flex-wrap items-center gap-2">
               {(["all", ...problemChips.map((c) => c.key)] as RiskChipKey[]).map((key) => {
                 const meta = key === "all" ? allChipMeta : problemChips.find((c) => c.key === key)!.meta;
                 const Icon = meta.icon;
@@ -765,6 +765,38 @@ export default function Index() {
                   </button>
                 );
               })}
+              <div className="ml-auto">
+                {searchOpen ? (
+                  <div className="relative w-56 animate-in fade-in slide-in-from-right-2 duration-200">
+                    <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      autoFocus
+                      value={searchValue}
+                      onChange={(e) => setSearchValue(e.target.value)}
+                      placeholder="Поиск…"
+                      className="h-8 w-full rounded-full border border-slate-200 bg-white pl-8 pr-8 text-xs outline-none focus:border-primary"
+                    />
+                    <button
+                      onClick={() => {
+                        setSearchOpen(false);
+                        setSearchValue("");
+                      }}
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-muted-foreground hover:bg-muted"
+                      aria-label="Закрыть поиск"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setSearchOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
+                  >
+                    <Search className="h-3.5 w-3.5" />
+                    Поиск
+                  </button>
+                )}
+              </div>
             </div>
 
 
