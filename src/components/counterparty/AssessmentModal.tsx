@@ -30,6 +30,7 @@ import {
   type CommentRecord,
 } from "./AssessmentCommentHistory";
 import { AssessmentCommentDrawer, type AssessmentCommentPayload } from "./AssessmentCommentDrawer";
+import { CounterpartyHeaderMeta } from "./CounterpartyHeaderMeta";
 
 export type AssessmentStatus = "pending" | "confirmed" | "disagreed" | "updated" | "review";
 
