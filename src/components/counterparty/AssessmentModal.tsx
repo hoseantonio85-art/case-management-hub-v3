@@ -231,31 +231,6 @@ export function AssessmentModal({
               Оценка контрагента {assessment.counterpartyName}
             </h2>
             {inn && <p className="mt-1 text-xs text-muted-foreground">ИНН {inn}</p>}
-            <div className={cn(
-              "mt-5 rounded-3xl p-[1.5px]",
-              effectivePositive
-                ? "bg-gradient-to-r from-emerald-200 via-emerald-100 to-teal-100"
-                : "bg-gradient-to-r from-rose-200 via-red-100 to-orange-100",
-            )}>
-              <div className={cn(
-                "flex items-start gap-4 rounded-[22px] px-6 py-5",
-                effectivePositive
-                  ? "bg-gradient-to-br from-emerald-50/60 via-white to-white"
-                  : "bg-gradient-to-br from-rose-50/60 via-white to-white",
-              )}>
-                <NormAssistantIcon size="lg" tone={effectivePositive ? "emerald" : "rose"} />
-                <div className="min-w-0 flex-1">
-                  <div className="mt-1 text-lg font-semibold text-slate-900">
-                    Обоснование оценки
-                  </div>
-                  <p className="mt-2 text-sm leading-snug text-muted-foreground">
-                    {effectivePositive
-                      ? "Критически значимых факторов риска не выявлено. Финансовые, регистрационные и репутационные признаки не блокируют заключение сделки."
-                      : "Компания имеет критически значимые риски: за последние 6 месяцев сменились собственники или директор, оперативное погашение краткосрочных обязательств невозможно, а также активы сформированы в основном за счёт привлечённых средств."}
-                  </p>
-                </div>
-              </div>
-            </div>
           </div>
 
 
@@ -267,48 +242,7 @@ export function AssessmentModal({
               <aside className="order-2 lg:col-start-2 lg:row-start-1">
 
                 <div className="space-y-3 lg:sticky lg:top-0">
-                  <div className="rounded-2xl border border-border bg-white p-5">
-                    <div className="text-sm font-semibold text-foreground">Информация</div>
-                    <div className="mt-3 space-y-3">
-                      <InfoRow label="ИНН" value={assessment.inn} />
-                      <InfoRow label="ОГРН" value={defaultOgrn} />
-                      <InfoRow
-                        label="Дата оценки"
-                        value={
-                          <div>
-                            <div className="text-sm leading-snug text-foreground">{assessment.date}</div>
-                            <div className="text-[11px] text-muted-foreground">обновлено сегодня</div>
-                          </div>
-                        }
-                      />
-                      <InfoRow label="Текущий статус ЕГРЮЛ" value="Действующая" />
-                      {infoExpanded && (
-                        <>
-                          <InfoRow
-                            label="Основной ОКВЭД"
-                            value={`${defaultRegistrationInfo.okvedCode} · ${defaultRegistrationInfo.okvedName}`}
-                          />
-                          <InfoRow
-                            label="Юридический адрес"
-                            value={defaultRegistrationInfo.legalAddress}
-                          />
-                        </>
-                      )}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setInfoExpanded((v) => !v)}
-                      className="mt-3 text-xs font-medium text-primary hover:underline"
-                    >
-                      {infoExpanded ? "Свернуть" : "Подробнее"}
-                    </button>
-                  </div>
 
-                  <CommentHistoryEntry
-                    count={commentHistory.length}
-                    lastDate={commentHistory[0]?.dateTime ?? ""}
-                    onOpen={() => setCommentHistoryOpen(true)}
-                  />
 
 
 
@@ -319,7 +253,7 @@ export function AssessmentModal({
               {/* Groups — left, row 2 */}
               <section className="order-3 lg:col-start-1 lg:row-start-1 space-y-5">
                 <div>
-                <h3 className="mb-2 text-sm font-semibold">Группы оценки</h3>
+                
                 <div className="grid grid-cols-1 gap-2.5">
                   {MAIN_GROUP_IDS.map((id) => {
                     const g = assessment.groups.find((x) => x.id === id);
