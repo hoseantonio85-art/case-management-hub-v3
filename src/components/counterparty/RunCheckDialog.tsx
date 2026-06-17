@@ -45,7 +45,7 @@ export function RunCheckDialog({
     setError(null);
     setLoading(true);
     setTimeout(() => {
-      onSubmit(innDigits);
+      onSubmit(innDigits, files);
       reset();
     }, 1500);
   };
