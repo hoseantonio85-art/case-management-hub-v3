@@ -465,9 +465,11 @@ function pluralCriteria(n: number) {
 function OtherGroupsAccordion({
   groups,
   onOpen,
+  groupComments = {},
 }: {
   groups: AssessmentGroup[];
   onOpen: (g: AssessmentGroup) => void;
+  groupComments?: Partial<Record<AssessmentGroupId, GroupComment>>;
 }) {
   const [open, setOpen] = useState(false);
   const totals = sumGroupCounts(groups);
