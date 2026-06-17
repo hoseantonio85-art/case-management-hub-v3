@@ -127,7 +127,8 @@ export function ChecksWidget({
                 strokeWidth="3"
                 strokeLinecap="round"
                 strokeDasharray="94.2"
-                strokeDashoffset="55"
+                strokeDashoffset={dashOffset}
+                style={{ transition: "stroke-dashoffset 0.6s ease" }}
               />
             </svg>
             <Sparkles className="relative h-4 w-4 text-primary" />
