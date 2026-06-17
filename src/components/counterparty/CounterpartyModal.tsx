@@ -39,6 +39,7 @@ import { AssessmentModal, type AssessmentStatus, type Disagreement } from "./Ass
 import { buildAssessment, type Assessment } from "@/lib/assessment-data";
 import { defaultOgrn, defaultRegistrationInfo } from "./RegistrationInfoWidget";
 import { RegistrationInfoDrawer } from "./RegistrationInfoDrawer";
+import { AddContractDrawer } from "./AddContractDrawer";
 
 const toFiniteNumber = (value: unknown) => {
   const numberValue = Number(value ?? 0);
