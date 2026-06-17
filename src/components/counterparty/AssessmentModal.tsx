@@ -519,3 +519,17 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
     </div>
   );
 }
+
+function AssessmentInfoWidget() {
+  return (
+    <div className="rounded-2xl border border-border bg-white p-4">
+      <h4 className="text-base font-semibold">Информация</h4>
+      <div className="mt-3 space-y-3">
+        <InfoRow label="Дата проверки" value="16.06.2026" />
+        <InfoRow label="Мониторинг" value="Ежедневно" />
+        <InfoRow label="Динамика за неделю" value="+3 риска" />
+        <InfoRow label="Автор" value="Норм" />
+      </div>
+    </div>
+  );
+}
