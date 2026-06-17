@@ -246,9 +246,8 @@ export function AssessmentModal({
             <div className="grid gap-y-5 gap-x-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-x-12">
               {/* What changed — right column */}
               <aside className="order-2 lg:col-start-2 lg:row-start-1">
-
                 <div className="space-y-3 lg:sticky lg:top-0">
-
+                  <AssessmentInfoWidget />
                 </div>
               </aside>
 
