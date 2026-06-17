@@ -362,10 +362,12 @@ function GroupCard({
   group,
   onOpen,
   compact = false,
+  hasComment = false,
 }: {
   group: AssessmentGroup;
   onOpen: (g: AssessmentGroup) => void;
   compact?: boolean;
+  hasComment?: boolean;
 }) {
   const counts = groupCounts(group);
   const negatives = group.criteria.filter((c) => c.passed === false);
@@ -398,6 +400,21 @@ function GroupCard({
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {hasComment && (
+            <TooltipProvider delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary"
+                    aria-label="Есть замечание к группе"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>Есть замечание к группе</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-foreground" />
         </div>
       </div>
