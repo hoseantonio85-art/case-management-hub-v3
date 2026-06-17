@@ -18,7 +18,8 @@ import {
   OTHER_GROUP_IDS,
 } from "@/lib/assessment-data";
 import { ChevronDown } from "lucide-react";
-import { AssessmentGroupDrawer } from "./AssessmentGroupDrawer";
+import { AssessmentGroupDrawer, type GroupComment } from "./AssessmentGroupDrawer";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { defaultOgrn, defaultRegistrationInfo } from "./RegistrationInfoWidget";
 import { RegistrationInfoDrawer } from "./RegistrationInfoDrawer";
 import { KeyAnomaliesWidget } from "./KeyAnomaliesWidget";
