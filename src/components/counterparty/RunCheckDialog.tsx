@@ -11,7 +11,7 @@ export function RunCheckDialog({
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onSubmit: (inn: string) => void;
+  onSubmit: (inn: string, files: File[]) => void;
 }) {
   const [inn, setInn] = useState("");
   const [error, setError] = useState<string | null>(null);
