@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, ClipboardList, Sparkles } from "lucide-react";
 
 export type CheckProcessStatus = "running" | "done";
@@ -15,6 +16,17 @@ export function ChecksWidget({
   const isEmpty = total === 0;
   const isRunning = runningCount > 0;
   const isDoneOnly = !isRunning && doneCount > 0;
+
+  const [pulse, setPulse] = useState(false);
+  const prevTotal = useRef(total);
+  useEffect(() => {
+    if (total !== prevTotal.current) {
+      prevTotal.current = total;
+      setPulse(true);
+      const t = setTimeout(() => setPulse(false), 900);
+      return () => clearTimeout(t);
+    }
+  }, [total]);
 
   let subtitle = "Нет проверок";
   if (isRunning) subtitle = `${runningCount} в обработке`;
