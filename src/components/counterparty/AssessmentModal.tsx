@@ -243,9 +243,6 @@ export function AssessmentModal({
 
                 <div className="space-y-3 lg:sticky lg:top-0">
 
-
-
-
                 </div>
               </aside>
 
