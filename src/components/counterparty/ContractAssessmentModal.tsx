@@ -243,6 +243,12 @@ function InfoBlock() {
         </div>
         <div>
           <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+            Автор
+          </div>
+          <div className="mt-0.5 text-foreground">Норм</div>
+        </div>
+        <div>
+          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
             Источник
           </div>
           <a
@@ -277,6 +283,15 @@ export function ContractAssessmentModal({
   const topLevel: Level =
     LEVEL_ORDER.find((l) => grouped[l].length > 0) ?? "low";
 
+  const headerGradient: Record<Level, string> = {
+    very_high:
+      "bg-gradient-to-b from-rose-50 via-rose-50/40 to-transparent",
+    high: "bg-gradient-to-b from-rose-50 via-rose-50/40 to-transparent",
+    medium:
+      "bg-gradient-to-b from-amber-50 via-amber-50/40 to-transparent",
+    low: "bg-gradient-to-b from-slate-50 via-slate-50/40 to-transparent",
+  };
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
@@ -289,7 +304,12 @@ export function ContractAssessmentModal({
         >
           <div className="relative flex min-h-0 flex-1 flex-col">
             {/* Header */}
-            <div className="shrink-0 bg-gradient-to-b from-slate-50 via-slate-50/40 to-transparent px-5 pt-6 pb-6 lg:px-10">
+            <div
+              className={cn(
+                "shrink-0 px-5 pt-6 pb-6 lg:px-10",
+                headerGradient[topLevel],
+              )}
+            >
               <div className="absolute right-5 top-5 flex items-center gap-2">
                 <button
                   onClick={() => onOpenChange(false)}
@@ -313,15 +333,7 @@ export function ContractAssessmentModal({
             {/* Body */}
             <div className="min-h-0 flex-1 overflow-y-auto bg-white px-5 py-6 lg:px-10">
               <div className="grid gap-y-5 gap-x-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-x-12">
-                <aside className="order-2 lg:col-start-2 lg:row-start-1">
-                  <div className="lg:sticky lg:top-0">
-                    <InfoBlock />
-                  </div>
-                </aside>
-                <section className="order-3 space-y-3 lg:col-start-1 lg:row-start-1">
-                  <div className="text-sm font-semibold text-foreground">
-                    Риски
-                  </div>
+                <section className="order-1 space-y-3 lg:col-start-1 lg:row-start-1">
                   {LEVEL_ORDER.map((lvl) => (
                     <LevelAccordion
                       key={lvl}
@@ -330,6 +342,11 @@ export function ContractAssessmentModal({
                     />
                   ))}
                 </section>
+                <aside className="order-2 lg:col-start-2 lg:row-start-1">
+                  <div className="lg:sticky lg:top-0">
+                    <InfoBlock />
+                  </div>
+                </aside>
               </div>
             </div>
 
