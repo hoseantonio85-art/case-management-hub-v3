@@ -45,7 +45,7 @@ export const levelMeta: Record<
   },
 };
 
-const RISKS: ContractRisk[] = [
+export const RISKS: ContractRisk[] = [
   {
     id: "vh-1",
     level: "very_high",
