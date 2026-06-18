@@ -550,7 +550,13 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-export function AssessmentInfoWidget() {
+export function AssessmentInfoWidget({
+  inn,
+  contractFile,
+}: {
+  inn?: string;
+  contractFile?: string;
+} = {}) {
   return (
     <div className="rounded-2xl border border-border bg-white p-4">
       <h4 className="text-base font-semibold">Информация</h4>
@@ -558,6 +564,22 @@ export function AssessmentInfoWidget() {
         <InfoRow label="Дата проверки" value="18.06.2026" />
         <InfoRow label="Инициатор" value="Измайлова Л.Д." />
         <InfoRow label="Автор" value="Норм" />
+        {inn && <InfoRow label="Источник" value={`ИНН ${inn}`} />}
+        {contractFile && (
+          <InfoRow
+            label="Источник"
+            value={
+              <a
+                href="#"
+                onClick={(e) => e.preventDefault()}
+                className="inline-flex items-center gap-1.5 text-foreground hover:text-primary"
+              >
+                <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                {contractFile}
+              </a>
+            }
+          />
+        )}
       </div>
     </div>
   );
