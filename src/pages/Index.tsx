@@ -956,7 +956,7 @@ export default function Index() {
         onOpenCheck={(c) => {
           const a = buildAssessment(
             `ООО „Альтаир Логистик“`,
-            c.inn,
+            c.inn ?? "",
             "auto",
           );
           setActiveCheckId(c.id);
