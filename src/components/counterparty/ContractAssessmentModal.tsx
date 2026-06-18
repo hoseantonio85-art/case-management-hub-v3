@@ -4,6 +4,7 @@ import { X, ChevronDown, ArrowUp, Flame, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { largeModalContentClass } from "@/lib/modal-styles";
+import { AssessmentInfoWidget } from "./AssessmentModal";
 
 export type Level = "very_high" | "high" | "medium" | "low";
 
@@ -224,46 +225,6 @@ export function LevelAccordion({
   );
 }
 
-function InfoBlock() {
-  return (
-    <div className="rounded-2xl border border-border bg-white p-4">
-      <div className="text-sm font-semibold text-foreground">Информация</div>
-      <div className="mt-3 space-y-3 text-[13px]">
-        <div>
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-            Дата проверки
-          </div>
-          <div className="mt-0.5 text-foreground">18.06.2026</div>
-        </div>
-        <div>
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-            Инициатор
-          </div>
-          <div className="mt-0.5 text-foreground">Измайлова Л.Д.</div>
-        </div>
-        <div>
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-            Автор
-          </div>
-          <div className="mt-0.5 text-foreground">Норм</div>
-        </div>
-        <div>
-          <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-            Источник
-          </div>
-          <a
-            href="#"
-            onClick={(e) => e.preventDefault()}
-            className="mt-1 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[12px] font-medium text-foreground hover:bg-slate-100"
-          >
-            <Download className="h-3.5 w-3.5 text-muted-foreground" />
-            dogovor_uslugi_v3.pdf
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export function ContractAssessmentModal({
   open,
@@ -344,7 +305,7 @@ export function ContractAssessmentModal({
                 </section>
                 <aside className="order-2 lg:col-start-2 lg:row-start-1">
                   <div className="lg:sticky lg:top-0">
-                    <InfoBlock />
+                    <AssessmentInfoWidget contractFile="dogovor_uslugi_v3.pdf" />
                   </div>
                 </aside>
               </div>

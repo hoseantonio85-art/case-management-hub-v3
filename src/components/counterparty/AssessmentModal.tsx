@@ -557,6 +557,7 @@ export function AssessmentInfoWidget({
   inn?: string;
   contractFile?: string;
 } = {}) {
+  const hasSource = !!inn || !!contractFile;
   return (
     <div className="rounded-2xl border border-border bg-white p-4">
       <h4 className="text-base font-semibold">Информация</h4>
@@ -564,21 +565,32 @@ export function AssessmentInfoWidget({
         <InfoRow label="Дата проверки" value="18.06.2026" />
         <InfoRow label="Инициатор" value="Измайлова Л.Д." />
         <InfoRow label="Автор" value="Норм" />
-        {inn && <InfoRow label="Источник" value={`ИНН ${inn}`} />}
-        {contractFile && (
-          <InfoRow
-            label="Источник"
-            value={
-              <a
-                href="#"
-                onClick={(e) => e.preventDefault()}
-                className="inline-flex items-center gap-1.5 text-foreground hover:text-primary"
-              >
-                <Download className="h-3.5 w-3.5 text-muted-foreground" />
-                {contractFile}
-              </a>
-            }
-          />
+        {hasSource && (
+          <div>
+            <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              Источник
+            </div>
+            <div className="mt-1 space-y-1.5">
+              {inn && (
+                <div className="text-sm leading-snug text-foreground break-words">
+                  ИНН {inn}
+                </div>
+              )}
+              {contractFile && (
+                <a
+                  href="#"
+                  onClick={(e) => e.preventDefault()}
+                  className="inline-flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[12px] text-foreground hover:bg-slate-100 w-full"
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                    {contractFile}
+                  </span>
+                  <span className="text-muted-foreground">Скачать</span>
+                </a>
+              )}
+            </div>
+          </div>
         )}
       </div>
     </div>
