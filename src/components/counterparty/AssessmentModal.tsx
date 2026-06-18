@@ -386,7 +386,7 @@ function CountPill({ kind, count }: { kind: AssessmentCountKind; count: number }
 }
 
 
-function GroupCard({
+export function GroupCard({
   group,
   onOpen,
   compact = false,
