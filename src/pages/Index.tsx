@@ -35,6 +35,7 @@ import { RunCheckDialog } from "@/components/counterparty/RunCheckDialog";
 import { PendingAssessmentModal } from "@/components/counterparty/PendingAssessmentModal";
 import { ChecksWidget } from "@/components/counterparty/CheckProcessPill";
 import { ChecksDrawer, type CheckRecord } from "@/components/counterparty/CheckProcessDrawer";
+import { ContractAssessmentModal } from "@/components/counterparty/ContractAssessmentModal";
 
 function buildNewCounterparty(inn: string, today: string): Counterparty {
   return {
@@ -291,6 +292,8 @@ export default function Index() {
   const [activeCheckId, setActiveCheckId] = useState<string | null>(null);
   const [checkAssessment, setCheckAssessment] = useState<Assessment | null>(null);
   const [checkAssessmentOpen, setCheckAssessmentOpen] = useState(false);
+  const [contractModalOpen, setContractModalOpen] = useState(false);
+  const [activeContractCheckId, setActiveContractCheckId] = useState<string | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   // Legacy manual assessment flow (kept for AssessmentModal scenarios from existing cards)
@@ -954,6 +957,13 @@ export default function Index() {
         onOpenChange={setCheckDrawerOpen}
         checks={checks}
         onOpenCheck={(c) => {
+          const isContract = c.type === "contract" || (!c.inn && c.fileNames.length > 0);
+          if (isContract) {
+            setActiveContractCheckId(c.id);
+            setCheckDrawerOpen(false);
+            setContractModalOpen(true);
+            return;
+          }
           const a = buildAssessment(
             `ООО „Альтаир Логистик“`,
             c.inn ?? "",
@@ -965,6 +975,23 @@ export default function Index() {
           setCheckAssessmentOpen(true);
         }}
       />
+
+      <ContractAssessmentModal
+        open={contractModalOpen}
+        onOpenChange={(o) => {
+          setContractModalOpen(o);
+          if (!o) setActiveContractCheckId(null);
+        }}
+        onDelete={() => {
+          if (activeContractCheckId) {
+            setChecks((prev) => prev.filter((c) => c.id !== activeContractCheckId));
+          }
+          setContractModalOpen(false);
+          setActiveContractCheckId(null);
+          toast("Результат проверки удалён");
+        }}
+      />
+
 
       <AssessmentModal
         assessment={checkAssessment}
