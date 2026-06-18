@@ -921,13 +921,15 @@ export default function Index() {
         onOpenChange={setRunDialogOpen}
         onSubmit={(inn, files) => {
           setRunDialogOpen(false);
-          const id = `check-${inn}-${Date.now()}`;
+          const isContract = !inn && files.length > 0;
+          const id = `check-${inn || "contract"}-${Date.now()}`;
           const rec: CheckRecord = {
             id,
-            inn,
+            inn: inn || undefined,
             fileNames: files.map((f) => f.name),
             status: "running",
             createdAt: Date.now(),
+            type: isContract ? "contract" : "counterparty",
           };
           setChecks((prev) => [rec, ...prev]);
           window.setTimeout(() => {
@@ -954,7 +956,7 @@ export default function Index() {
         onOpenCheck={(c) => {
           const a = buildAssessment(
             `ООО „Альтаир Логистик“`,
-            c.inn,
+            c.inn ?? "",
             "auto",
           );
           setActiveCheckId(c.id);
@@ -994,7 +996,7 @@ export default function Index() {
           if (!check) return;
           const today = new Date().toLocaleDateString("ru-RU");
           const cp: Counterparty = {
-            ...buildNewCounterparty(check.inn, today),
+            ...buildNewCounterparty(check.inn ?? "", today),
             name: `ООО „Альтаир Логистик“`,
             tag: "Нет риска",
             status: "no_risk",

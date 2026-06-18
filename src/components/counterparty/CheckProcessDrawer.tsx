@@ -2,13 +2,15 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { CheckCircle2, Loader2, ClipboardList } from "lucide-react";
 
 export type CheckProcessStatus = "running" | "done";
+export type CheckRecordType = "counterparty" | "contract";
 
 export type CheckRecord = {
   id: string;
-  inn: string;
+  inn?: string;
   fileNames: string[];
   status: CheckProcessStatus;
   createdAt: number;
+  type?: CheckRecordType;
 };
 
 function formatDate(ts: number) {
@@ -69,7 +71,8 @@ export function ChecksDrawer({
             <ul className="space-y-2.5">
               {checks.map((c) => {
                 const isDone = c.status === "done";
-                const clickable = isDone;
+                const isContract = c.type === "contract" || (!c.inn && c.fileNames.length > 0);
+                const clickable = isDone && !isContract;
                 return (
                   <li key={c.id}>
                     <button
@@ -95,10 +98,12 @@ export function ChecksDrawer({
                         )}
                       </div>
                       <div className="text-sm font-semibold text-foreground">
-                        ООО „Альтаир Логистик“
+                        {isContract ? "Договор № 24/06-У" : "ООО „Альтаир Логистик“"}
                       </div>
                       <div className="text-[11px] text-muted-foreground">
-                        ИНН {c.inn} · Дата оценки: {formatDateOnly(c.createdAt)} · Инициатор: Измайлова Л.Д.
+                        {isContract
+                          ? `Дата запуска: ${formatDateOnly(c.createdAt)} · Инициатор: Измайлова Л.Д. · Тип договора: Договор об оказании услуг`
+                          : `ИНН ${c.inn} · Дата оценки: ${formatDateOnly(c.createdAt)} · Инициатор: Измайлова Л.Д.`}
                       </div>
                       {!isDone && (
                         <div className="text-[11px] text-muted-foreground">

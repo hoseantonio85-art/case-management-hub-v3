@@ -32,7 +32,10 @@ export function RunCheckDialog({
   };
 
   const innDigits = inn.replace(/\D/g, "");
-  const isValid = innDigits.length === 10 || innDigits.length === 12;
+  const innFilled = innDigits.length > 0;
+  const innValid = innDigits.length === 10 || innDigits.length === 12;
+  const hasFiles = files.length > 0;
+  const canSubmit = innValid || (!innFilled && hasFiles);
 
   const handleClose = (o: boolean) => {
     if (isSending) return;
@@ -41,14 +44,18 @@ export function RunCheckDialog({
   };
 
   const handleStart = () => {
-    if (!isValid) {
+    if (!innFilled && !hasFiles) {
+      setError("Укажите ИНН или загрузите документ");
+      return;
+    }
+    if (innFilled && !innValid) {
       setError("Введите корректный ИНН");
       return;
     }
     setError(null);
     setIsSending(true);
     setFlying(true);
-    const innSnap = innDigits;
+    const innSnap = innValid ? innDigits : "";
     const filesSnap = files;
     setTimeout(() => {
       onSubmit(innSnap, filesSnap);
@@ -105,7 +112,7 @@ export function RunCheckDialog({
               className="mt-1 bg-white"
               disabled={isSending}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && isValid && !isSending) handleStart();
+                if (e.key === "Enter" && canSubmit && !isSending) handleStart();
               }}
             />
             <div className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
@@ -191,7 +198,7 @@ export function RunCheckDialog({
           <Button variant="ghost" size="sm" onClick={() => handleClose(false)} disabled={isSending}>
             Отменить
           </Button>
-          <Button size="sm" onClick={handleStart} disabled={isSending || !isValid}>
+          <Button size="sm" onClick={handleStart} disabled={isSending || !canSubmit}>
             {isSending ? "Запуск…" : "Запустить проверку"}
           </Button>
         </div>
