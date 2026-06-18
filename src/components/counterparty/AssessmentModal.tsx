@@ -189,12 +189,10 @@ export function AssessmentModal({
 
   if (!assessment) return null;
 
-  const effectivePositive = positive;
-  const headerBg = effectivePositive
+  const headerBg = positive
     ? "bg-gradient-to-b from-emerald-50 via-emerald-50/40 to-transparent"
     : statusMeta[status].headerBg;
-  const meta = { label: "", chip: "", headerBg };
-  const resolutionBadge = effectivePositive
+  const resolutionBadge = positive
     ? { label: "Сделки заключать можно", chip: "bg-emerald-100 text-emerald-900" }
     : { label: "Не заключать сделки", chip: "bg-rose-100 text-rose-900" };
 
@@ -214,7 +212,7 @@ export function AssessmentModal({
         >
         <div className="relative flex min-h-0 flex-1 flex-col">
           {/* Header */}
-          <div className={cn("shrink-0 px-5 pt-6 pb-6 lg:px-10", meta.headerBg)}>
+          <div className={cn("shrink-0 px-5 pt-6 pb-6 lg:px-10", headerBg)}>
             <div className="absolute right-5 top-5 flex items-center gap-2">
               {onBack && (
                 <button
@@ -555,9 +553,8 @@ function AssessmentInfoWidget() {
     <div className="rounded-2xl border border-border bg-white p-4">
       <h4 className="text-base font-semibold">Информация</h4>
       <div className="mt-3 space-y-3">
-        <InfoRow label="Дата проверки" value="16.06.2026" />
-        <InfoRow label="Мониторинг" value="Ежедневно" />
-        <InfoRow label="Динамика за неделю" value="+3 риска" />
+        <InfoRow label="Дата проверки" value="18.06.2026" />
+        <InfoRow label="Инициатор" value="Измайлова Л.Д." />
         <InfoRow label="Автор" value="Норм" />
       </div>
     </div>
