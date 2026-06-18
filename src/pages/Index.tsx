@@ -964,8 +964,23 @@ export default function Index() {
         onOpenChange={setCheckDrawerOpen}
         checks={checks}
         onOpenCheck={(c) => {
-          const isContract = c.type === "contract" || (!c.inn && c.fileNames.length > 0);
-          if (isContract) {
+          const hasInn = !!c.inn;
+          const hasFiles = c.fileNames.length > 0;
+          const recordType =
+            c.type ?? (hasInn && hasFiles ? "complex" : hasInn ? "counterparty" : "contract");
+          if (recordType === "complex") {
+            const a = buildAssessment(
+              `ООО „Альтаир Логистик“`,
+              c.inn ?? "",
+              "auto",
+            );
+            setActiveComplexCheckId(c.id);
+            setComplexAssessment(a);
+            setCheckDrawerOpen(false);
+            setComplexModalOpen(true);
+            return;
+          }
+          if (recordType === "contract") {
             setActiveContractCheckId(c.id);
             setCheckDrawerOpen(false);
             setContractModalOpen(true);
@@ -996,6 +1011,50 @@ export default function Index() {
           setContractModalOpen(false);
           setActiveContractCheckId(null);
           toast("Результат проверки удалён");
+        }}
+      />
+
+      <ComplexAssessmentModal
+        assessment={complexAssessment}
+        open={complexModalOpen}
+        onOpenChange={(o) => {
+          setComplexModalOpen(o);
+          if (!o) {
+            setActiveComplexCheckId(null);
+            setComplexAssessment(null);
+          }
+        }}
+        positive
+        onDelete={() => {
+          if (activeComplexCheckId) {
+            setChecks((prev) => prev.filter((c) => c.id !== activeComplexCheckId));
+          }
+          setComplexModalOpen(false);
+          setActiveComplexCheckId(null);
+          setComplexAssessment(null);
+          toast("Результат проверки удалён");
+        }}
+        onAddToList={() => {
+          const check = checks.find((c) => c.id === activeComplexCheckId);
+          if (!check) {
+            setComplexModalOpen(false);
+            return;
+          }
+          const today = new Date().toLocaleDateString("ru-RU");
+          const cp: Counterparty = {
+            ...buildNewCounterparty(check.inn ?? "", today),
+            name: `ООО „Альтаир Логистик“`,
+            tag: "Нет риска",
+            status: "no_risk",
+          };
+          setAddedCounterparties((prev) =>
+            prev.some((c) => c.inn === cp.inn) ? prev : [cp, ...prev],
+          );
+          setChecks((prev) => prev.filter((c) => c.id !== check.id));
+          setComplexModalOpen(false);
+          setActiveComplexCheckId(null);
+          setComplexAssessment(null);
+          toast.success("Контрагент добавлен в список дебиторов");
         }}
       />
 
