@@ -22,6 +22,15 @@ function formatDate(ts: number) {
   });
 }
 
+function formatDateOnly(ts: number) {
+  const d = new Date(ts);
+  return d.toLocaleDateString("ru-RU", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
 export function ChecksDrawer({
   open,
   onOpenChange,
