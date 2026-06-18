@@ -72,7 +72,7 @@ export function ChecksDrawer({
               {checks.map((c) => {
                 const isDone = c.status === "done";
                 const isContract = c.type === "contract" || (!c.inn && c.fileNames.length > 0);
-                const clickable = isDone && !isContract;
+                const clickable = isDone;
                 return (
                   <li key={c.id}>
                     <button
