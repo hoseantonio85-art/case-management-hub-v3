@@ -15,7 +15,7 @@ type ContractRisk = {
   description: string;
 };
 
-const levelMeta: Record<
+export const levelMeta: Record<
   Level,
   { label: string; chip: string; iconWrap: string; icon: string }
 > = {
