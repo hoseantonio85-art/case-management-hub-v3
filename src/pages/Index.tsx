@@ -928,7 +928,10 @@ export default function Index() {
         onOpenChange={setRunDialogOpen}
         onSubmit={(inn, files) => {
           setRunDialogOpen(false);
-          const isContract = !inn && files.length > 0;
+          const hasInn = !!inn;
+          const hasFiles = files.length > 0;
+          const recordType: "counterparty" | "contract" | "complex" =
+            hasInn && hasFiles ? "complex" : hasInn ? "counterparty" : "contract";
           const id = `check-${inn || "contract"}-${Date.now()}`;
           const rec: CheckRecord = {
             id,
@@ -936,7 +939,7 @@ export default function Index() {
             fileNames: files.map((f) => f.name),
             status: "running",
             createdAt: Date.now(),
-            type: isContract ? "contract" : "counterparty",
+            type: recordType,
           };
           setChecks((prev) => [rec, ...prev]);
           window.setTimeout(() => {
