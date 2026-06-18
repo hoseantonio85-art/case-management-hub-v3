@@ -86,6 +86,13 @@ export function RunCheckDialog({
         </div>
 
         <div className="space-y-4 px-5 py-4">
+          <div className="flex items-start gap-2.5 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <div className="min-w-0 text-[12px]">
+              <div className="font-medium text-foreground">Проверка займёт до 10 минут</div>
+            </div>
+          </div>
+
           <div>
             <label className="text-[11px] font-medium text-muted-foreground">ИНН</label>
             <Input
@@ -101,9 +108,12 @@ export function RunCheckDialog({
                 if (e.key === "Enter" && isValid && !isSending) handleStart();
               }}
             />
-            <p className="mt-1.5 text-[12px] text-muted-foreground">
+            <div className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-violet-200 text-primary">
+                <Sparkles className="h-2.5 w-2.5" />
+              </span>
               По ИНН будет сформирована оценка контрагента.
-            </p>
+            </div>
             {error && <div className="mt-1.5 text-[12px] text-rose-600">{error}</div>}
           </div>
 
@@ -168,15 +178,11 @@ export function RunCheckDialog({
                 ))}
               </ul>
             )}
-            <p className="mt-2 text-[12px] text-muted-foreground">
+            <div className="mt-2 inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-violet-200 text-primary">
+                <Sparkles className="h-2.5 w-2.5" />
+              </span>
               По документам будет сформирована оценка рисков документа.
-            </p>
-          </div>
-
-          <div className="flex items-start gap-2.5 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
-            <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-            <div className="min-w-0 text-[12px]">
-              <div className="font-medium text-foreground">Проверка займёт до 10 минут</div>
             </div>
           </div>
         </div>
