@@ -315,7 +315,7 @@ export function ContractAssessmentModal({
                     />
                   ))}
                 </section>
-                <aside className="order-2 lg:col-start-2 lg:row-start-1">
+                <aside className="order-2 lg:col-start-2 lg:row-start-1 lg:pt-8">
                   <div className="lg:sticky lg:top-0">
                     <AssessmentInfoWidget contractFile="dogovor_uslugi_v3.pdf" />
                   </div>
