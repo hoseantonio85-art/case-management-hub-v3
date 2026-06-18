@@ -389,7 +389,23 @@ export function ContractAssessmentModal({
             {/* Body */}
             <div className="min-h-0 flex-1 overflow-y-auto bg-white px-5 py-6 lg:px-10">
               <div className="grid gap-y-5 gap-x-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-x-12">
-                <section className="order-1 space-y-3 lg:col-start-1 lg:row-start-1">
+                <div className="order-1 lg:col-start-1 lg:row-start-1">
+                  <button
+                    type="button"
+                    onClick={() => setErrorsOpen(true)}
+                    className="flex w-full items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-left text-rose-900 transition hover:bg-rose-100/70"
+                  >
+                    <AlertTriangle className="h-4 w-4 shrink-0" />
+                    <span className="flex-1 text-sm font-medium">
+                      Обнаружено {CONTRACT_ERRORS.length} ошибок в документе
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[12px] font-medium">
+                      Перейти
+                      <ChevronRight className="h-4 w-4" />
+                    </span>
+                  </button>
+                </div>
+                <section className="order-2 space-y-3 lg:col-start-1 lg:row-start-2">
                   <div className="flex items-center gap-2">
                     <h3 className="text-base font-semibold text-foreground">Риски</h3>
                     <RisksCounter count={RISKS.length} />
@@ -402,13 +418,27 @@ export function ContractAssessmentModal({
                     />
                   ))}
                 </section>
-                <aside className="order-2 lg:col-start-2 lg:row-start-1 lg:pt-8">
+                <aside className="order-3 lg:col-start-2 lg:row-start-2 lg:pt-8">
                   <div className="lg:sticky lg:top-0">
                     <AssessmentInfoWidget contractFile="dogovor_uslugi_v3.pdf" />
                   </div>
                 </aside>
               </div>
             </div>
+
+            <InModalDrawer open={errorsOpen} onOpenChange={setErrorsOpen}>
+              <div className="px-6 pt-6 pb-4">
+                <h3 className="text-lg font-semibold text-foreground">Ошибки документа</h3>
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  Найдено {CONTRACT_ERRORS.length} ошибок, которые могут повлиять на корректность договора.
+                </p>
+              </div>
+              <div className="space-y-2 px-6 pb-6">
+                {CONTRACT_ERRORS.map((e) => (
+                  <ErrorCard key={e.id} err={e} />
+                ))}
+              </div>
+            </InModalDrawer>
 
             {/* Footer */}
             <div className="shrink-0 border-t border-border bg-white px-5 py-4 lg:px-10">
