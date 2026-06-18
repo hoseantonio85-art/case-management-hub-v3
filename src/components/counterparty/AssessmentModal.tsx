@@ -548,7 +548,7 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function AssessmentInfoWidget() {
+export function AssessmentInfoWidget() {
   return (
     <div className="rounded-2xl border border-border bg-white p-4">
       <h4 className="text-base font-semibold">Информация</h4>
