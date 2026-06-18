@@ -94,10 +94,12 @@ export function ComplexAssessmentModal({
             {/* Body */}
             <div className="min-h-0 flex-1 overflow-y-auto bg-white px-5 py-6 lg:px-10">
               <div className="grid gap-y-6 gap-x-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-x-12">
-                <aside className="order-2 lg:col-start-2 lg:row-start-1">
+                <aside className="order-2 lg:col-start-2 lg:row-start-1 lg:mt-9">
                   <div className="space-y-3 lg:sticky lg:top-0">
-                    <AssessmentInfoWidget />
-                    <SourcesBlock inn={assessment.inn} />
+                    <AssessmentInfoWidget
+                      inn={assessment.inn}
+                      contractFile="dogovor_uslugi_v3.pdf"
+                    />
                   </div>
                 </aside>
 
