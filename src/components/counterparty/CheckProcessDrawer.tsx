@@ -71,7 +71,8 @@ export function ChecksDrawer({
             <ul className="space-y-2.5">
               {checks.map((c) => {
                 const isDone = c.status === "done";
-                const clickable = isDone;
+                const isContract = c.type === "contract" || (!c.inn && c.fileNames.length > 0);
+                const clickable = isDone && !isContract;
                 return (
                   <li key={c.id}>
                     <button
@@ -97,10 +98,12 @@ export function ChecksDrawer({
                         )}
                       </div>
                       <div className="text-sm font-semibold text-foreground">
-                        ООО „Альтаир Логистик“
+                        {isContract ? "Договор № 24/06-У" : "ООО „Альтаир Логистик“"}
                       </div>
                       <div className="text-[11px] text-muted-foreground">
-                        ИНН {c.inn} · Дата оценки: {formatDateOnly(c.createdAt)} · Инициатор: Измайлова Л.Д.
+                        {isContract
+                          ? `Дата запуска: ${formatDateOnly(c.createdAt)} · Инициатор: Измайлова Л.Д. · Тип договора: Договор об оказании услуг`
+                          : `ИНН ${c.inn} · Дата оценки: ${formatDateOnly(c.createdAt)} · Инициатор: Измайлова Л.Д.`}
                       </div>
                       {!isDone && (
                         <div className="text-[11px] text-muted-foreground">
