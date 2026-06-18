@@ -167,6 +167,14 @@ export function RunCheckDialog({
             )}
           </div>
 
+          <div className="flex items-start gap-2 text-[12px] text-muted-foreground">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <p>
+              ИНН — оценка контрагента. Документы — оценка рисков документа. При загрузке обоих источников будут созданы две проверки.
+            </p>
+          </div>
+
+
           <div className="flex items-start gap-2.5 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2.5">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
             <div className="min-w-0 text-[12px]">
