@@ -9,7 +9,7 @@ import { InModalDrawer } from "./InModalDrawer";
 
 type ContractError = { id: string; title: string; summary: string; description: string; justification: string };
 
-const CONTRACT_ERRORS: ContractError[] = [
+export const CONTRACT_ERRORS: ContractError[] = [
   {
     id: "e1",
     title: "Ошибка 1",
