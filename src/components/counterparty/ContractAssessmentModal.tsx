@@ -329,6 +329,7 @@ export function ContractAssessmentModal({
   onOpenChange: (o: boolean) => void;
   onDelete?: () => void;
 }) {
+  const [errorsOpen, setErrorsOpen] = useState(false);
   const grouped: Record<Level, ContractRisk[]> = {
     very_high: RISKS.filter((r) => r.level === "very_high"),
     high: RISKS.filter((r) => r.level === "high"),
