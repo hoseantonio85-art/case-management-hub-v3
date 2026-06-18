@@ -101,9 +101,9 @@ export function ChecksDrawer({
                         {isContract ? "Договор № 24/06-У" : "ООО „Альтаир Логистик“"}
                       </div>
                       <div className="text-[11px] text-muted-foreground">
-                        {isContract
-                          ? `Дата запуска: ${formatDateOnly(c.createdAt)} · Инициатор: Измайлова Л.Д. · Тип договора: Договор об оказании услуг`
-                          : `ИНН ${c.inn} · Дата оценки: ${formatDateOnly(c.createdAt)} · Инициатор: Измайлова Л.Д.`}
+                      {isContract
+                        ? `Договор об оказании услуг · ${formatDateOnly(c.createdAt)} · Измайлова Л.Д.`
+                        : `ИНН ${c.inn} · ${formatDateOnly(c.createdAt)} · Измайлова Л.Д.`}
                       </div>
                       {!isDone && (
                         <div className="text-[11px] text-muted-foreground">
