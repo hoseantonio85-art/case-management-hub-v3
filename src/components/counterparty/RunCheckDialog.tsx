@@ -112,7 +112,7 @@ export function RunCheckDialog({
               className="mt-1 bg-white"
               disabled={isSending}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && isValid && !isSending) handleStart();
+                if (e.key === "Enter" && canSubmit && !isSending) handleStart();
               }}
             />
             <div className="mt-1.5 inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
@@ -198,7 +198,7 @@ export function RunCheckDialog({
           <Button variant="ghost" size="sm" onClick={() => handleClose(false)} disabled={isSending}>
             Отменить
           </Button>
-          <Button size="sm" onClick={handleStart} disabled={isSending || !isValid}>
+          <Button size="sm" onClick={handleStart} disabled={isSending || !canSubmit}>
             {isSending ? "Запуск…" : "Запустить проверку"}
           </Button>
         </div>
