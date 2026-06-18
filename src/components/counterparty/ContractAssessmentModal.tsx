@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { largeModalContentClass } from "@/lib/modal-styles";
 
-type Level = "very_high" | "high" | "medium" | "low";
+export type Level = "very_high" | "high" | "medium" | "low";
 
 type ContractRisk = {
   id: string;
