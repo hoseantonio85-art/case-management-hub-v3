@@ -490,7 +490,7 @@ function pluralCriteria(n: number) {
   return "критериев";
 }
 
-function OtherGroupsAccordion({
+export function OtherGroupsAccordion({
   groups,
   onOpen,
   groupComments = {},
