@@ -1,6 +1,8 @@
+import { useState } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { X, ArrowUp } from "lucide-react";
+import { X, AlertTriangle, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { largeModalContentClass } from "@/lib/modal-styles";
 import {
@@ -14,9 +16,11 @@ import {
   LevelAccordion,
   RISKS,
   RisksCounter,
-  levelMeta,
+  CONTRACT_ERRORS,
+  ErrorCard,
   type Level,
 } from "./ContractAssessmentModal";
+import { InModalDrawer } from "./InModalDrawer";
 
 export function ComplexAssessmentModal({
   assessment,
@@ -42,15 +46,15 @@ export function ComplexAssessmentModal({
     ? { label: "Сделки заключать можно", chip: "bg-emerald-100 text-emerald-900" }
     : { label: "Не заключать сделки", chip: "bg-rose-100 text-rose-900" };
 
+  const [tab, setTab] = useState<"counterparty" | "contract">("counterparty");
+  const [errorsOpen, setErrorsOpen] = useState(false);
+
   const grouped: Record<Level, typeof RISKS> = {
     very_high: RISKS.filter((r) => r.level === "very_high"),
     high: RISKS.filter((r) => r.level === "high"),
     medium: RISKS.filter((r) => r.level === "medium"),
     low: RISKS.filter((r) => r.level === "low"),
   };
-  const topLevel: Level =
-    LEVEL_ORDER.find((l) => grouped[l].length > 0) ?? "low";
-  const topMeta = levelMeta[topLevel];
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
@@ -94,69 +98,82 @@ export function ComplexAssessmentModal({
 
             {/* Body */}
             <div className="min-h-0 flex-1 overflow-y-auto bg-white px-5 py-6 lg:px-10">
-              <div className="grid gap-y-6 gap-x-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-x-12">
-                <aside className="order-2 lg:col-start-2 lg:row-start-1 lg:mt-9">
-                  <div className="space-y-3 lg:sticky lg:top-0">
-                    <AssessmentInfoWidget
-                      inn={assessment.inn}
-                      contractFile="dogovor_uslugi_v3.pdf"
-                    />
-                  </div>
-                </aside>
+              <Tabs
+                value={tab}
+                onValueChange={(v) => setTab(v as "counterparty" | "contract")}
+                className="w-full"
+              >
+                <TabsList className="mb-5">
+                  <TabsTrigger value="counterparty">Проверка контрагента</TabsTrigger>
+                  <TabsTrigger value="contract">Проверка по договору</TabsTrigger>
+                </TabsList>
 
-                <section className="order-1 space-y-7 lg:col-start-1 lg:row-start-1">
-                  {/* Counterparty assessment */}
-                  <div>
-                    <h3 className="text-base font-semibold text-foreground">
-                      Оценка контрагента
-                    </h3>
-                    <div className="mt-3 grid grid-cols-1 gap-2.5">
-                      {MAIN_GROUP_IDS.map((id) => {
-                        const g = assessment.groups.find((x) => x.id === id);
-                        if (!g) return null;
-                        return (
-                          <GroupCard
-                            key={g.id}
-                            group={g as AssessmentGroup}
-                            onOpen={() => {}}
-                          />
-                        );
-                      })}
+                <div className="grid gap-y-5 gap-x-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-x-12">
+                  <section className="order-1 lg:col-start-1 lg:row-start-1">
+                    <TabsContent value="counterparty" className="mt-0">
+                      <div className="grid grid-cols-1 gap-2.5">
+                        {MAIN_GROUP_IDS.map((id) => {
+                          const g = assessment.groups.find((x) => x.id === id);
+                          if (!g) return null;
+                          return (
+                            <GroupCard
+                              key={g.id}
+                              group={g as AssessmentGroup}
+                              onOpen={() => {}}
+                            />
+                          );
+                        })}
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="contract" className="mt-0">
+                      <div className="space-y-3">
+                        <button
+                          type="button"
+                          onClick={() => setErrorsOpen(true)}
+                          className="flex w-full items-center gap-3 rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-left text-rose-900 transition hover:bg-rose-100/70"
+                        >
+                          <AlertTriangle className="h-4 w-4 shrink-0" />
+                          <span className="flex-1 text-sm font-medium">
+                            Обнаружено {CONTRACT_ERRORS.length} ошибок в документе
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[12px] font-medium">
+                            Перейти
+                            <ChevronRight className="h-4 w-4" />
+                          </span>
+                        </button>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-semibold text-foreground">Риски</h3>
+                          <RisksCounter count={RISKS.length} />
+                        </div>
+                        {LEVEL_ORDER.map((lvl) => (
+                          <LevelAccordion key={lvl} level={lvl} risks={grouped[lvl]} />
+                        ))}
+                      </div>
+                    </TabsContent>
+                  </section>
+                  <aside className="order-2 lg:col-start-2 lg:row-start-1">
+                    <div className="lg:sticky lg:top-0">
+                      <AssessmentInfoWidget contractFile="dogovor_uslugi_v3.pdf" />
                     </div>
-                  </div>
-
-                  {/* Contract assessment */}
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-semibold text-foreground">
-                        Оценка договоров
-                      </h3>
-                      <RisksCounter count={RISKS.length} />
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium",
-                          topMeta.chip,
-                        )}
-                      >
-                        {topLevel === "very_high" && (
-                          <ArrowUp className="h-3 w-3" />
-                        )}
-                        {topMeta.label}
-                      </span>
-                    </div>
-                    <div className="mt-3 space-y-3">
-                      {LEVEL_ORDER.map((lvl) => (
-                        <LevelAccordion
-                          key={lvl}
-                          level={lvl}
-                          risks={grouped[lvl]}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </section>
-              </div>
+                  </aside>
+                </div>
+              </Tabs>
             </div>
+
+            <InModalDrawer open={errorsOpen} onOpenChange={setErrorsOpen}>
+              <div className="px-6 pt-6 pb-4">
+                <h3 className="text-lg font-semibold text-foreground">Ошибки документа</h3>
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  Найдено {CONTRACT_ERRORS.length} ошибок, которые могут повлиять на корректность договора.
+                </p>
+              </div>
+              <div className="space-y-2 px-6 pb-6">
+                {CONTRACT_ERRORS.map((e) => (
+                  <ErrorCard key={e.id} err={e} />
+                ))}
+              </div>
+            </InModalDrawer>
+
 
             {/* Footer */}
             <div className="shrink-0 border-t border-border bg-white px-5 py-4 lg:px-10">

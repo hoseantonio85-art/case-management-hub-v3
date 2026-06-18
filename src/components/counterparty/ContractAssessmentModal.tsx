@@ -9,7 +9,7 @@ import { InModalDrawer } from "./InModalDrawer";
 
 type ContractError = { id: string; title: string; summary: string; description: string; justification: string };
 
-const CONTRACT_ERRORS: ContractError[] = [
+export const CONTRACT_ERRORS: ContractError[] = [
   {
     id: "e1",
     title: "Ошибка 1",
@@ -55,7 +55,7 @@ const CONTRACT_ERRORS: ContractError[] = [
   },
 ];
 
-function ErrorCard({ err }: { err: ContractError }) {
+export function ErrorCard({ err }: { err: ContractError }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50/50 transition">
