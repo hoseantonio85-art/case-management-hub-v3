@@ -19,6 +19,7 @@ export function CounterpartyHeaderMeta({
   status = "Действующая",
   registrationInfo = defaultRegistrationInfo,
   extraRows = [],
+  contractType,
   className,
 }: {
   inn: string;
@@ -26,6 +27,7 @@ export function CounterpartyHeaderMeta({
   status?: string;
   registrationInfo?: RegistrationInfo;
   extraRows?: ExtraRow[];
+  contractType?: string;
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -46,10 +48,14 @@ export function CounterpartyHeaderMeta({
     ...extraRows,
   ].filter((r) => r.value !== undefined && r.value !== null && r.value !== "");
 
+  const inlineText = contractType
+    ? `ИНН ${inn} · ${contractType} · ${status}`
+    : `ИНН ${inn} · ${status}`;
+
   return (
     <div className={cn("mt-1", className)}>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>ИНН {inn} · {status}</span>
+        <span>{inlineText}</span>
         <button
           type="button"
           onClick={() => setOpen(true)}
