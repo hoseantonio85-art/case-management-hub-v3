@@ -33,16 +33,16 @@ function getRecordType(c: CheckRecord): CheckRecordType {
 }
 
 const typeBadgeLabel: Record<CheckRecordType, string> = {
-  counterparty: "По ИНН",
-  complex: "Комплексная",
-  contract: "По договору",
+  counterparty: "Контрагент",
+  complex: "Контрагент + договор",
+  contract: "Договор",
 };
 
 const FILTERS: { value: CheckTypeFilter; label: string }[] = [
   { value: "all", label: "Все" },
-  { value: "counterparty", label: "По ИНН" },
-  { value: "complex", label: "Комплексная" },
-  { value: "contract", label: "По договору" },
+  { value: "counterparty", label: "Контрагент" },
+  { value: "complex", label: "Контрагент + договор" },
+  { value: "contract", label: "Договор" },
 ];
 
 export function ChecksDrawer({
